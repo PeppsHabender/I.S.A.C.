@@ -7,7 +7,7 @@ data class DpsReport(
     var encounterTime: Long = 0,
     var error: String? = null,
     var encounter: Encounter? = null,
-    var isWingmanLog: Boolean? = null
+    var isWingmanLog: Boolean? = null,
 )
 
 data class Encounter(

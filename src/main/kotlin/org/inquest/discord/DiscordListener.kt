@@ -3,7 +3,6 @@ package org.inquest.discord
 import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.discordjson.json.ApplicationCommandRequest
-import discord4j.discordjson.json.ImmutableApplicationCommandRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono

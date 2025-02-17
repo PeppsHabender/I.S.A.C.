@@ -29,10 +29,7 @@ data class JsonSkill(
     val quickness: Double? = null,
 )
 
-data class JsonRotation(
-    val id: Long? = null,
-    val skills: List<JsonSkill> = listOf(),
-)
+data class JsonRotation(val id: Long? = null, val skills: List<JsonSkill> = listOf())
 
 data class JsonActorCombatReplayData(
     val start: Long? = null,
@@ -143,7 +140,7 @@ sealed interface JsonGameplayStatsParent {
         val killed: Int? = null,
         val downed: Int? = null,
         val downContribution: Int? = null,
-    ): JsonGameplayStatsParent
+    ) : JsonGameplayStatsParent
 
     data class JsonGameplayStatsAll(
         val totalDamageCount: Int? = null,
@@ -181,7 +178,7 @@ sealed interface JsonGameplayStatsParent {
         val swapCount: Int? = null,
         val skillCastUptime: Double? = null,
         val skillCastUptimeNoAA: Double? = null,
-    ): JsonGameplayStatsParent
+    ) : JsonGameplayStatsParent
 }
 
 data class JsonPlayerSupport(
@@ -272,7 +269,7 @@ sealed interface JsonActorParent {
         val healthPercents: DoubleListList = listOf(),
         val barrierPercents: DoubleListList = listOf(),
         val combatReplayData: JsonActorCombatReplayData? = null,
-    ): JsonActorParent
+    ) : JsonActorParent
 
     data class JsonNPC(
         val name: String? = null,
@@ -311,7 +308,7 @@ sealed interface JsonActorParent {
         val buffs: List<JsonBuffsUptime> = listOf(),
         val enemyPlayer: Boolean? = null,
         val breakbarPercents: DoubleListList = listOf(),
-    ): JsonActorParent
+    ) : JsonActorParent
 
     data class JsonPlayer(
         val name: String? = null,
@@ -376,13 +373,10 @@ sealed interface JsonActorParent {
         val activeTimes: List<Long> = listOf(),
         val extHealingStats: EXTJsonPlayerHealingStats? = null,
         val extBarrierStats: EXTJsonPlayerBarrierStats? = null,
-    ): JsonActorParent
+    ) : JsonActorParent
 }
 
-data class JsonMechanic(
-    val time: Long? = null,
-    val actor: String? = null,
-)
+data class JsonMechanic(val time: Long? = null, val actor: String? = null)
 
 data class JsonMechanics(
     val mechanicsData: List<JsonMechanic> = listOf(),
@@ -441,10 +435,7 @@ data class JsonPhase(
     val breakbarPhase: Boolean? = null,
 )
 
-data class CombatReplayMap(
-    val url: String? = null,
-    val interval: List<Long> = listOf(),
-)
+data class CombatReplayMap(val url: String? = null, val interval: List<Long> = listOf())
 
 data class JsonCombatReplayMetaData(
     val inchToPixel: Float? = null,

@@ -10,7 +10,7 @@ data class RunAnalysis(
     val duration: Duration,
     val pulls: List<Pull>,
     val groupDps: Int,
-    val playerStats: List<PlayerAnalysis>
+    val playerStats: List<PlayerAnalysis>,
 )
 
 data class Pull(

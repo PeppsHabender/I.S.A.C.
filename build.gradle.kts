@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "2.0.21"
     kotlin("plugin.allopen") version "2.0.21"
     id("io.quarkus")
+    id("com.diffplug.spotless") version "7.0.2"
 }
 
 repositories {
@@ -46,6 +47,12 @@ allOpen {
     annotation("jakarta.enterprise.context.ApplicationScoped")
     annotation("jakarta.persistence.Entity")
     annotation("io.quarkus.test.junit.QuarkusTest")
+}
+
+spotless {
+    kotlin {
+        ktfmt().kotlinlangStyle()
+    }
 }
 
 kotlin {

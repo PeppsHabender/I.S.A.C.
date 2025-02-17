@@ -7,10 +7,7 @@ data class IsacBoss(
     val emote: IsacEmote?,
     val shortname: String?,
     val targets: List<Int>?,
-    val phases: List<Int>
+    val phases: List<Int>,
 )
 
-data class IsacEmote(
-    val normal: String?,
-    val challenge: String?
-)
+data class IsacEmote(val normal: String?, val challenge: String?)

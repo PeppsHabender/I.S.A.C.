@@ -22,7 +22,7 @@ data class EXTJsonMinionsBarrierStats(
     val totalBarrier: List<Int> = listOf(),
     val totalAlliedBarrier: IntListList = listOf(),
     val totalBarrierDist: ListList<EXTJsonBarrierDist> = listOf(),
-    val alliedBarrierDist: ListListList<EXTJsonBarrierDist> = listOf()
+    val alliedBarrierDist: ListListList<EXTJsonBarrierDist> = listOf(),
 )
 
 data class EXTJsonPlayerBarrierStats(
@@ -81,7 +81,7 @@ data class EXTJsonMinionsHealingStats(
     val totalHealing: List<Int> = listOf(),
     val totalAlliedHealing: IntListList = listOf(),
     val totalHealingDist: ListList<EXTJsonHealingDist> = listOf(),
-    val alliedHealingDist: ListListList<EXTJsonHealingDist> = listOf()
+    val alliedHealingDist: ListListList<EXTJsonHealingDist> = listOf(),
 )
 
 data class EXTJsonPlayerHealingStats(
