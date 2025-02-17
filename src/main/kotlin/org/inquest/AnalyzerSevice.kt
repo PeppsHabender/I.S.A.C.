@@ -17,8 +17,7 @@ import org.inquest.utils.startTime
 
 @ApplicationScoped
 class AnalyzerService {
-    @Inject
-    private lateinit var bossData: BossData
+    @Inject private lateinit var bossData: BossData
 
     fun analyze(logs: List<Pair<String, JsonLog>>): RunAnalysis =
         logs
@@ -50,7 +49,7 @@ class AnalyzerService {
                             log.isCM,
                             logDuration,
                             (targetAlive?.finalHealth ?: 0) /
-                                    (targetAlive?.totalHealth ?: 1).toDouble(),
+                                (targetAlive?.totalHealth ?: 1).toDouble(),
                         )
                     if (!log.success) {
                         downtime += logDuration

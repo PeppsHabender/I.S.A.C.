@@ -7,7 +7,6 @@ import java.text.NumberFormat
 import java.util.Locale
 import org.inquest.entities.Pull
 import org.inquest.entities.RunAnalysis
-import org.inquest.utils.inRoundedMinutes
 import org.inquest.utils.optionAsString
 
 object OverviewEmbed {

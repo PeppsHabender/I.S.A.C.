@@ -119,6 +119,7 @@ class IsacCommand : CommandListener {
             }
 
     companion object {
-        private val DPS_REPORT_RGX = Regex("https://(?:[ab]\\.)?dps.report/[\\w-]+(?=\\s*?https|$)")
+        private val DPS_REPORT_RGX =
+            Regex("https://(?:[ab]\\.)?dps.report/[\\w-]+(?=\\s*?https|$|\\s)")
     }
 }
