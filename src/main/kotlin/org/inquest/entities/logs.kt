@@ -1,0 +1,61 @@
+package org.inquest.entities
+
+data class DpsReport(
+    var id: String,
+    var permalink: String = "",
+    var uploadTime: Long = 0,
+    var encounterTime: Long = 0,
+    var error: String? = null,
+    var encounter: Encounter? = null,
+    var isWingmanLog: Boolean? = null
+)
+
+data class Encounter(
+    var success: Boolean = false,
+    var duration: Int = 0,
+    var compDps: Int = 0,
+    var numberOfPlayers: Int = 0,
+    var numberOfGroups: Int = 0,
+    var bossId: Int = -1,
+    var jsonAvailable: Boolean = false,
+)
+
+data class JsonLog(
+    val eliteInsightsVersion: String? = null,
+    val triggerID: Long? = null,
+    val eiEncounterID: Long? = null,
+    val fightName: String? = null,
+    val fightIcon: String? = null,
+    val arcVersion: String? = null,
+    val gW2Build: Long? = null,
+    val language: String? = null,
+    val fractalScale: Int? = null,
+    val languageID: Byte? = null,
+    val recordedBy: String? = null,
+    val recordedAccountBy: String? = null,
+    val timeStart: String? = null,
+    val timeEnd: String? = null,
+    val timeStartStd: String? = null,
+    val timeEndStd: String? = null,
+    val duration: String? = null,
+    val durationMS: Long? = null,
+    val logStartOffset: Long? = null,
+    val durationStartOffset: Long? = null,
+    val success: Boolean = false,
+    val isCM: Boolean = false,
+    val anonymous: Boolean? = null,
+    val detailedWvW: Boolean? = null,
+    val targets: List<JsonActorParent.JsonNPC> = listOf(),
+    val players: List<JsonActorParent.JsonPlayer> = listOf(),
+    val phases: List<JsonPhase> = listOf(),
+    val mechanics: List<JsonMechanics> = listOf(),
+    val uploadLinks: List<String> = listOf(),
+    val skillMap: Map<String, SkillDesc> = mapOf(),
+    val buffMap: Map<String, BuffDesc> = mapOf(),
+    val damageModMap: Map<String, DamageModDesc> = mapOf(),
+    val personalBuffs: Map<String, List<Long>> = mapOf(),
+    val presentFractalInstabilities: List<Long> = listOf(),
+    val presentInstanceBuffs: List<List<Long>> = listOf(),
+    val logErrors: List<String> = listOf(),
+    val combatReplayMetaData: JsonCombatReplayMetaData? = null,
+)

@@ -20,8 +20,12 @@ dependencies {
     implementation("io.quarkus:quarkus-rest-jackson")
     implementation("io.quarkus:quarkus-kotlin")
     implementation("io.quarkus:quarkus-config-yaml")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.quarkus:quarkus-arc")
+
+    implementation("com.discord4j:discord4j-core:3.3.0-RC1")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.rest-assured:rest-assured")
 }

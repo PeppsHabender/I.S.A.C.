@@ -1,0 +1,786 @@
+[
+  {
+    "boss": "Vale Guardian",
+    "eliteInsightsId": 131329,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:vg:1340792080229859441>"
+    },
+    "shortname": "VG",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Gorseval",
+    "eliteInsightsId": 131330,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:gors:1340792174823997440>"
+    },
+    "shortname": "Gors",
+    "targets": [
+      0
+    ],
+    "phases": [
+      3,
+      6
+    ]
+  },
+  {
+    "boss": "Sabetha",
+    "eliteInsightsId": 131331,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:sab:1340792233401778340>"
+    },
+    "shortname": "Sab",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Slothasor",
+    "eliteInsightsId": 131585,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:sloth:1340792309779792075>"
+    },
+    "shortname": "Sloth",
+    "targets": [
+      0
+    ],
+    "phases": [
+      2,
+      4,
+      6,
+      8,
+      10
+    ]
+  },
+  {
+    "boss": "Bandit Trio",
+    "eliteInsightsId": 131586,
+    "validForTopStat": false,
+    "emote": {
+      "normal": "<:trio:1340792358928781363>"
+    },
+    "shortname": "Trio",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Matthias",
+    "eliteInsightsId": 131587,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:matt:1340792454626017330>"
+    },
+    "shortname": "Matt",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Escort",
+    "eliteInsightsId": 131841,
+    "validForTopStat": false,
+    "emote": {
+      "normal": "<:escort:1340792500272762891>"
+    },
+    "shortname": "Escort",
+    "targets": [
+      0
+    ],
+    "phases": [
+      1,
+      2
+    ]
+  },
+  {
+    "boss": "Keep Construct",
+    "eliteInsightsId": 131842,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:kc:1340792549203513344>",
+      "challenge": "<:kccm:1340793596722417705>"
+    },
+    "shortname": "KC",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Twisted Castle",
+    "eliteInsightsId": 131843,
+    "validForTopStat": false,
+    "shortname": "TC",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Xera",
+    "eliteInsightsId": 131844,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:xera:1340792612340367482>"
+    },
+    "shortname": "Xera",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Cairn",
+    "eliteInsightsId": 132097,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:cai:1340792661958721637>",
+      "challenge": "<:caicm:1340793897588101231>"
+    },
+    "shortname": "Cairn",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Mursaat Overseer",
+    "eliteInsightsId": 132098,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:mo:1340792715897606155>",
+      "challenge": "<:mocm:1340793638585765899>"
+    },
+    "shortname": "MO",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Samarog",
+    "eliteInsightsId": 132099,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:sam:1340792760739037192>",
+      "challenge": "<:samcm:1340793536014192670>"
+    },
+    "shortname": "Sam",
+    "targets": [
+      0
+    ],
+    "phases": [
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      9,
+      10,
+      12,
+      13,
+      14
+    ]
+  },
+  {
+    "boss": "Deimos",
+    "eliteInsightsId": 132100,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:dei:1340791487830429756>",
+      "challenge": "<:deicm:1340793406737350817>"
+    },
+    "shortname": "Dei",
+    "targets": [
+      0
+    ],
+    "phases": [
+      1
+    ]
+  },
+  {
+    "boss": "Soulless Horror",
+    "eliteInsightsId": 132353,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:sh:1340792807643811841>",
+      "challenge": "<:shcm:1340793493148143616>"
+    },
+    "shortname": "SH",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "River of Souls",
+    "eliteInsightsId": 132354,
+    "validForTopStat": false,
+    "emote": {
+      "normal": "<:rr:1202661651531300874>"
+    },
+    "shortname": "River",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Broken King",
+    "eliteInsightsId": 132355,
+    "validForTopStat": false,
+    "emote": {
+      "normal": "<:ice:1340793246820864011>"
+    },
+    "shortname": "Ice",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Soul Eater",
+    "eliteInsightsId": 132356,
+    "validForTopStat": false,
+    "emote": {
+      "normal": "<:eater:1340793297924263986>"
+    },
+    "shortname": "Eater",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Eye of Judgement/Eye of Fate",
+    "eliteInsightsId": 132357,
+    "validForTopStat": false,
+    "emote": {
+      "normal": "<:eye:1340793347815641178>"
+    },
+    "shortname": "Eyes",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Dhuum",
+    "eliteInsightsId": 132358,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:dhu:1340792867316305950>",
+      "challenge": "<:dhucm:1340793857901592717>"
+    },
+    "shortname": "Dhu",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Conjured Amalgamate",
+    "eliteInsightsId": 132609,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:ca:1340792914602885130>",
+      "challenge": "<:cacm:1340793947932327948>"
+    },
+    "shortname": "CA",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Twin Largos",
+    "eliteInsightsId": 132610,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:tl:1340792977681027123>",
+      "challenge": "<:tlcm:1340793449133375568>"
+    },
+    "shortname": "TL",
+    "targets": [
+      0,
+      1
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Qadim",
+    "eliteInsightsId": 132611,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:qad:1340793026519502898>",
+      "challenge": "<:qadcm:1340793681333981324>"
+    },
+    "shortname": "Qad",
+    "targets": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Adina",
+    "eliteInsightsId": 132865,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:adi:1340793078205906944>",
+      "challenge": "<:adicm:1340794014517170267>"
+    },
+    "shortname": "Adina",
+    "targets": [
+      0
+    ],
+    "phases": [
+      2,
+      4,
+      6
+    ]
+  },
+  {
+    "boss": "Sabir",
+    "eliteInsightsId": 132866,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:sabi:1340793150230233128>",
+      "challenge": "<:sabicm:1340793807167557774>"
+    },
+    "shortname": "Sabir",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Qadim the Peerless",
+    "eliteInsightsId": 132867,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:qtp:1340793198452277351>",
+      "challenge": "<:qtpcm:1340793732231860224>"
+    },
+    "shortname": "QtP",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "MAMA",
+    "eliteInsightsId": 196865,
+    "validForTopStat": true,
+    "targets": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Siax",
+    "eliteInsightsId": 196866,
+    "validForTopStat": true,
+    "targets": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Ensolyss",
+    "eliteInsightsId": 196867,
+    "validForTopStat": true,
+    "targets": [
+      0
+    ],
+    "phases": [
+      3,
+      6,
+      8,
+      10
+    ]
+  },
+  {
+    "boss": "Skorvald",
+    "eliteInsightsId": 197121,
+    "validForTopStat": true,
+    "targets": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Artsariiv",
+    "eliteInsightsId": 197122,
+    "validForTopStat": true,
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Arkk",
+    "eliteInsightsId": 197123,
+    "validForTopStat": true,
+    "targets": [
+      0,
+      1,
+      2
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Ai, Elemental and Dark",
+    "eliteInsightsId": 197377,
+    "validForTopStat": true,
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Ai, Elemental Only",
+    "eliteInsightsId": 197378,
+    "validForTopStat": true,
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Ai, Dark Only",
+    "eliteInsightsId": 197379,
+    "validForTopStat": true,
+    "targets": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Kanaxai, Scythe of House Aurkus",
+    "eliteInsightsId": 197633,
+    "validForTopStat": true,
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Freezie",
+    "eliteInsightsId": 262401,
+    "validForTopStat": false,
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Icebrood Construct",
+    "eliteInsightsId": 262657,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:icebr:1340794519011983493>"
+    },
+    "shortname": "Icebrood",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Fraenir of Jormag",
+    "eliteInsightsId": 262658,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:frae:1340794567045156976>"
+    },
+    "shortname": "Frae",
+    "targets": [
+      0,
+      1
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Kodans",
+    "eliteInsightsId": 262659,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:kodan:1340794617481920624>"
+    },
+    "shortname": "Kodan",
+    "targets": [
+      0,
+      1
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Boneskinner",
+    "eliteInsightsId": 262660,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:bone:1340794708351258624>"
+    },
+    "shortname": "Bone",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Whisper of Jormag",
+    "eliteInsightsId": 262661,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:whis:1340794669168332840>"
+    },
+    "shortname": "Whisp",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Varinia Stormsounder",
+    "eliteInsightsId": 262662,
+    "validForTopStat": false,
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Aetherblade Hideout",
+    "eliteInsightsId": 262913,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:ah:1340794163762958396>",
+      "challenge": "<:ahcm:1340795132756230205>"
+    },
+    "shortname": "AH",
+    "targets": [
+      0,
+      1
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Xunlai Jade Junkyard",
+    "eliteInsightsId": 262914,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:xjj:1340794203709640714>",
+      "challenge": "<:xjjcm:1340794813121040405>"
+    },
+    "shortname": "XJJ",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Kaineng Overlook",
+    "eliteInsightsId": 262915,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:ko:1340794256339501068>",
+      "challenge": "<:kocm:1340794932255916053>"
+    },
+    "shortname": "KO",
+    "targets": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Harvest Temple",
+    "eliteInsightsId": 262916,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:ht:1340794299586973798>",
+      "challenge": "<:htcm:1340794976841240679>"
+    },
+    "shortname": "HT",
+    "targets": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Old Lion's Court",
+    "eliteInsightsId": 262917,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:olc:1340794352963686470>",
+      "challenge": "<:olccm:1340794867617632307>"
+    },
+    "shortname": "OLC",
+    "targets": [
+      0,
+      1,
+      2
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Cosmic Observatory",
+    "eliteInsightsId": 263425,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:co:1340794410824105984>",
+      "challenge": "<:cocm:1340795024673214600>"
+    },
+    "shortname": "CO",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Temple of Febe",
+    "eliteInsightsId": 263426,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:cer:1340794458156957867>",
+      "challenge": "<:febecm:1340795077207003257>"
+    },
+    "shortname": "ToF",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  }
+]

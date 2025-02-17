@@ -1,2 +1,3 @@
-greeting:
-  message: "hello"
+discord:
+  token: ${discord.token}
+  application-id: ${discord.application-id}
