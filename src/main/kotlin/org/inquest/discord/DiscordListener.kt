@@ -1,5 +1,6 @@
 package org.inquest.discord
 
+import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.discordjson.json.ApplicationCommandRequest
@@ -25,7 +26,7 @@ interface EventListener<T : Event> {
 interface CommandListener {
     val name: String
 
-    fun build(): ApplicationCommandRequest
+    fun build(gatewayClient: GatewayDiscordClient): ApplicationCommandRequest
 
     fun handle(event: ChatInputInteractionEvent): Mono<Void>
 }

@@ -1,3 +1,4 @@
 discord:
-  token: ${discord.token}
-  application-id: ${discord.application-id}
+  token: ${DC_TOKEN}
+  application-id: ${DC_APP_ID}
+  guild-id: ${DC_GID:-1}

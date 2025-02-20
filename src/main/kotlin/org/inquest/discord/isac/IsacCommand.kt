@@ -1,11 +1,11 @@
 package org.inquest.discord.isac
 
+import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandOption
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.discordjson.json.ApplicationCommandOptionData
 import discord4j.discordjson.json.ApplicationCommandRequest
-import discord4j.rest.util.Color
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import java.util.stream.Stream
@@ -15,12 +15,17 @@ import org.eclipse.microprofile.rest.client.inject.RestClient
 import org.inquest.AnalyzerService
 import org.inquest.clients.DpsReportClient
 import org.inquest.discord.CommandListener
+import org.inquest.discord.CustomColors
+import org.inquest.discord.CustomEmojis
+import org.inquest.discord.isac.ErrorEmbed.handleAnalyzeException
+import org.inquest.discord.isac.ErrorEmbed.handleFetchingException
 import org.inquest.discord.isac.LogOverviewEmbeds.createSuccessLogsEmbed
 import org.inquest.discord.isac.LogOverviewEmbeds.createWipeLogsEmbed
 import org.inquest.discord.isac.OverviewEmbed.createOverviewEmbed
 import org.inquest.discord.isac.TopStatsEmbed.createTopStatsEmbed
 import org.inquest.entities.RunAnalysis
 import org.inquest.utils.BossData
+import org.inquest.utils.optionAsString
 import org.inquest.utils.startTime
 import org.inquest.utils.toMono
 import reactor.core.publisher.Flux
@@ -29,7 +34,7 @@ import reactor.core.scheduler.Schedulers
 
 @ApplicationScoped
 class IsacCommand : CommandListener {
-    override val name: String = "analyze"
+    override val name: String = "testest"
 
     @RestClient private lateinit var dpsReportClient: DpsReportClient
 
@@ -39,8 +44,12 @@ class IsacCommand : CommandListener {
 
     @Inject private lateinit var managedExecutor: ManagedExecutor
 
-    override fun build(): ApplicationCommandRequest =
-        ApplicationCommandRequest.builder()
+    private lateinit var gatewayClient: GatewayDiscordClient
+
+    override fun build(gatewayClient: GatewayDiscordClient): ApplicationCommandRequest {
+        this.gatewayClient = gatewayClient
+
+        return ApplicationCommandRequest.builder()
             .name(name)
             .description("Analyzes the given list of dps.report links")
             .addOption(
@@ -68,11 +77,12 @@ class IsacCommand : CommandListener {
                     .build()
             )
             .build()
+    }
 
     override fun handle(event: ChatInputInteractionEvent): Mono<Void> =
-        event.deferReply().then(longRunning(event))
+        event.deferReply().then(handleLogs(event))
 
-    fun longRunning(event: ChatInputInteractionEvent): Mono<Void> {
+    fun handleLogs(event: ChatInputInteractionEvent): Mono<Void> {
         return Flux.fromStream(event.extractLogs())
             .parallel()
             .runOn(Schedulers.fromExecutor(this.managedExecutor))
@@ -80,17 +90,20 @@ class IsacCommand : CommandListener {
                 this.dpsReportClient.fetchJson(link).map { Pair(link, it) }.toMono()
             }
             .collectSortedList { o1, o2 -> o1.second.startTime().compareTo(o2.second.startTime()) }
-            .map { this.analyzerService.analyze(it) }
-            .flatMap { event.editReply().withEmbeds(*it.createEmbeds(event).toTypedArray()) }
+            .onErrorResume { event.handleFetchingException() }
+            .flatMap {
+                if (it == null) Mono.empty() else Mono.just(this.analyzerService.analyze(it))
+            }
+            .onErrorResume { event.handleAnalyzeException(it) }
+            .flatMap {
+                if (it == null) Mono.empty()
+                else event.editReply().withEmbeds(*it.createEmbeds(event).toTypedArray())
+            }
             .then()
     }
 
     fun ChatInputInteractionEvent.extractLogs(): Stream<String> {
-        return DPS_REPORT_RGX.findAll(
-                getOption("logs").flatMap { it.value }.map { it.asString() }.get()
-            )
-            .map { it.value }
-            .asStream()
+        return DPS_REPORT_RGX.findAll(optionAsString("logs")!!).map { it.value }.asStream()
     }
 
     fun RunAnalysis.createEmbeds(event: ChatInputInteractionEvent): List<EmbedCreateSpec> =
@@ -102,7 +115,7 @@ class IsacCommand : CommandListener {
                     CustomEmojis.TOP_STATS,
                     "Top Stats",
                     0,
-                    Color.of(237, 178, 39),
+                    CustomColors.GOLD_COLOR,
                 ),
                 createTopStatsEmbed(
                     this,
@@ -110,7 +123,7 @@ class IsacCommand : CommandListener {
                     CustomEmojis.SEC_TOP_STATS,
                     "Second Best",
                     1,
-                    Color.of(130, 138, 146),
+                    CustomColors.SILVER_COLOR,
                 ),
                 createSuccessLogsEmbed(this, bossData),
             )

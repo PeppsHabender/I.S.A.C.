@@ -3,6 +3,8 @@ package org.inquest.discord.isac
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Color
+import org.inquest.discord.CustomEmojis
+import org.inquest.discord.createEmbed
 import kotlin.math.roundToInt
 import org.inquest.entities.PlayerAnalysis
 import org.inquest.entities.RunAnalysis
@@ -16,12 +18,11 @@ object TopStatsEmbed {
         title: String,
         idx: Int,
         color: Color,
-    ) =
-        EmbedCreateSpec.builder()
-            .title(emoji + "__${title}__")
-            .description(StringBuilder().append(createTopStats(event, analysis, idx)).toString())
-            .color(color)
-            .build()
+    ) = createEmbed(
+        StringBuilder().append(createTopStats(event, analysis, idx)).toString(),
+        emoji + "__${title}__",
+        color
+    )
 
     private fun createTopStats(
         event: ChatInputInteractionEvent,

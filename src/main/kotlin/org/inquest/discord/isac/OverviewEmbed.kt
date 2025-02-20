@@ -2,7 +2,9 @@ package org.inquest.discord.isac
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.spec.EmbedCreateSpec
-import discord4j.rest.util.Color
+import org.inquest.discord.CustomColors
+import org.inquest.discord.CustomEmojis
+import org.inquest.discord.createEmbed
 import java.text.NumberFormat
 import java.util.Locale
 import org.inquest.entities.Pull
@@ -13,22 +15,17 @@ object OverviewEmbed {
     fun createOverviewEmbed(
         analysis: RunAnalysis,
         event: ChatInputInteractionEvent,
-    ): EmbedCreateSpec =
-        EmbedCreateSpec.builder()
-            .title(
-                (event.optionAsString("name") ?: "Run Analysis") +
-                    " " +
-                    analysis.start.toDiscordTimestamp()
-            )
-            .description(
-                StringBuilder()
-                    .append(createTime(analysis))
-                    .appendLine()
-                    .append(createPulls(analysis))
-                    .toString()
-            )
-            .color(Color.of(43, 45, 49))
-            .build()
+    ): EmbedCreateSpec = createEmbed(
+        StringBuilder()
+            .append(createTime(analysis))
+            .appendLine()
+            .append(createPulls(analysis))
+            .toString(),
+        (event.optionAsString("name") ?: "Run Analysis") +
+                " " +
+                analysis.start.toDiscordTimestamp(),
+        CustomColors.TRANSPARENT_COLOR
+    )
 
     private fun createTime(analysis: RunAnalysis): String =
         StringBuilder(CustomEmojis.TIME)
