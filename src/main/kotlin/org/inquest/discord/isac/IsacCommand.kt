@@ -42,7 +42,7 @@ import kotlin.streams.asStream
  */
 @ApplicationScoped
 class IsacCommand : CommandListener {
-    override val name: String = "testest"
+    override val name: String = "analyze"
 
     /**
      * To be able to pull ei logs from dps.report
