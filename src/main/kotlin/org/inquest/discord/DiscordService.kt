@@ -4,6 +4,7 @@ import discord4j.core.DiscordClientBuilder
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.gateway.intent.Intent
 import discord4j.gateway.intent.IntentSet
 import io.quarkus.arc.All
@@ -19,22 +20,26 @@ import reactor.core.publisher.Mono
 
 @ConfigMapping(prefix = "discord")
 interface DiscordSettings {
-    @WithName("token") fun token(): String
+    @WithName("token")
+    fun token(): String
 
-    @WithName("application-id") fun applicationId(): Long
+    @WithName("application-id")
+    fun applicationId(): Long
 
-    @ConfigProperty(name = "guild-id", defaultValue = "-1") fun guildId(): Long
+    @ConfigProperty(name = "guild-id", defaultValue = "-1")
+    fun guildId(): Long
 }
 
 @Startup
 @ApplicationScoped
 class DiscordService {
-
     @Inject private lateinit var settings: DiscordSettings
 
-    @All @Inject lateinit var eventListeners: MutableList<EventListener<*>>
+    @All @Inject
+    lateinit var eventListeners: MutableList<EventListener<*>>
 
-    @All @Inject lateinit var commands: MutableList<CommandListener>
+    @All @Inject
+    lateinit var commands: MutableList<CommandListener>
 
     @PostConstruct
     fun initDiscordBot() {
@@ -45,13 +50,13 @@ class DiscordService {
         }
     }
 
-    private fun createDiscordClient() =
-        DiscordClientBuilder.create(settings.token())
-            .build()
-            .gateway()
-            .setEnabledIntents(INTENTS)
-            .login()
-            .block()!!
+    private fun createDiscordClient() = DiscordClientBuilder
+        .create(settings.token())
+        .build()
+        .gateway()
+        .setEnabledIntents(INTENTS)
+        .login()
+        .block()!!
 
     private fun GatewayDiscordClient.installEventListeners() {
         eventListeners
@@ -71,9 +76,11 @@ class DiscordService {
                     .createGuildApplicationCommand(
                         settings.applicationId(),
                         settings.guildId(),
-                        cmd.build(this),
-                    )
-                    .subscribe()
+                        ApplicationCommandRequest.builder()
+                            .from(cmd.build(this))
+                            .name(cmd.devName())
+                            .build(),
+                    ).subscribe()
             } else if (!LaunchMode.current().isDevOrTest) {
                 this.restClient.applicationService
                     .createGlobalApplicationCommand(settings.applicationId(), cmd.build(this))
@@ -84,10 +91,13 @@ class DiscordService {
 
     private fun GatewayDiscordClient.installCommandHandlers() {
         on(ChatInputInteractionEvent::class.java) { e ->
-                commands.firstOrNull { it.name == e.commandName }?.handle(e) ?: Mono.empty()
-            }
-            .subscribe()
+            commands.firstOrNull { it.devName() == e.commandName }?.handle(e) ?: Mono.empty()
+        }.subscribe()
     }
+
+    private fun CommandListener.devName() = name.devName()
+
+    private fun String.devName() = if (LaunchMode.current().isDevOrTest) "${this}_test" else this
 
     companion object {
         private val INTENTS =

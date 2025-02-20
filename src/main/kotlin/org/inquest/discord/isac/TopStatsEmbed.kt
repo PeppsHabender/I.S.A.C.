@@ -1,16 +1,21 @@
 package org.inquest.discord.isac
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
-import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Color
 import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
-import kotlin.math.roundToInt
 import org.inquest.entities.PlayerAnalysis
 import org.inquest.entities.RunAnalysis
 import org.inquest.utils.optionAsBoolean
+import kotlin.math.roundToInt
 
+/**
+ * The embed which includes all top-stats we currently calculate. Essentially takes the calculated [RunAnalysis] and reformats it into discord md.
+ */
 object TopStatsEmbed {
+    /**
+     * @see TopStatsEmbed
+     */
     fun createTopStatsEmbed(
         analysis: RunAnalysis,
         event: ChatInputInteractionEvent,
@@ -21,98 +26,96 @@ object TopStatsEmbed {
     ) = createEmbed(
         StringBuilder().append(createTopStats(event, analysis, idx)).toString(),
         emoji + "__${title}__",
-        color
+        color,
     )
 
     private fun createTopStats(
         event: ChatInputInteractionEvent,
         analysis: RunAnalysis,
         idx: Int = 0,
-    ) =
-        StringBuilder()
-            .apply {
-                val isTop = idx == 0
+    ) = StringBuilder()
+        .apply {
+            val isTop = idx == 0
 
+            createTopStat(
+                analysis,
+                isTop,
+                CustomEmojis.DPS,
+                "Dps          :",
+                sortBy = { it.avgDpsPos() },
+                extractor = { it.avgDps() },
+                formatter = { (it / 1000).format("#.# k") },
+                numPrefix = "⌀ ",
+                ascending = true,
+            )
+            createTopStat(
+                analysis,
+                isTop,
+                CustomEmojis.CC,
+                "Cc           :",
+                sortBy = { it.cc },
+            )
+            createTopStat(
+                analysis,
+                isTop,
+                CustomEmojis.RES_TIME,
+                "Res Time     :",
+                sortBy = { it.resTime },
+                formatter = { it.roundToInt() },
+                numSuffix = " s",
+            )
+            createTopStat(
+                analysis,
+                isTop,
+                CustomEmojis.CONDI_CLEANSE,
+                "Condi Cleanse:",
+                sortBy = { it.condiCleanse },
+            )
+            createTopStat(
+                analysis,
+                isTop,
+                CustomEmojis.BOON_STRIPS,
+                "Boon Strips  :",
+                sortBy = { it.boonStrips },
+            )
+            if (
+                event.optionAsBoolean("with_heal") &&
+                analysis.playerStats.any { it.avgHeal() > 0 }
+            ) {
                 createTopStat(
                     analysis,
                     isTop,
-                    CustomEmojis.DPS,
-                    "Dps          :",
-                    sortBy = { it.avgDpsPos() },
-                    extractor = { it.avgDps() },
+                    CustomEmojis.HEAL,
+                    "Hps          :",
+                    sortBy = { it.avgHeal() },
                     formatter = { (it / 1000).format("#.# k") },
-                    numPrefix = "⌀",
-                    ascending = true,
                 )
                 createTopStat(
                     analysis,
                     isTop,
-                    CustomEmojis.CC,
-                    "Cc           :",
-                    sortBy = { it.cc },
-                )
-                createTopStat(
-                    analysis,
-                    isTop,
-                    CustomEmojis.RES_TIME,
-                    "Res Time     :",
-                    sortBy = { it.resTime },
-                    formatter = { it.roundToInt() },
-                    numSuffix = " s",
-                )
-                createTopStat(
-                    analysis,
-                    isTop,
-                    CustomEmojis.CONDI_CLEANSE,
-                    "Condi Cleanse:",
-                    sortBy = { it.condiCleanse },
-                )
-                createTopStat(
-                    analysis,
-                    isTop,
-                    CustomEmojis.BOON_STRIPS,
-                    "Boon Strips  :",
-                    sortBy = { it.boonStrips },
-                )
-                if (
-                    event.optionAsBoolean("with_heal") &&
-                        analysis.playerStats.any { it.avgHeal() > 0 }
-                ) {
-                    createTopStat(
-                        analysis,
-                        isTop,
-                        CustomEmojis.HEAL,
-                        "Hps          :",
-                        sortBy = { it.avgHeal() },
-                        formatter = { (it / 1000).format("#.# k") },
-                    )
-                    createTopStat(
-                        analysis,
-                        isTop,
-                        CustomEmojis.BARRIER,
-                        "Bps          :",
-                        sortBy = { it.avgBarrier() },
-                        formatter = { (it / 1000).format("#.# k") },
-                    )
-                }
-                createTopStat(
-                    analysis,
-                    isTop,
-                    CustomEmojis.DMG_TAKEN,
-                    "Damage Taken :",
-                    sortBy = { it.damageTaken },
-                    formatter = { (it / 1000.0).roundToInt() },
-                    numSuffix = " k",
-                )
-                createTopStat(
-                    analysis,
-                    isTop,
-                    CustomEmojis.DOWNSTATES,
-                    "Downstates   :",
-                    sortBy = { it.downstates },
+                    CustomEmojis.BARRIER,
+                    "Bps          :",
+                    sortBy = { it.avgBarrier() },
+                    formatter = { (it / 1000).format("#.# k") },
                 )
             }
-            .toString()
+            createTopStat(
+                analysis,
+                isTop,
+                CustomEmojis.DMG_TAKEN,
+                "Damage Taken :",
+                sortBy = { it.damageTaken },
+                formatter = { (it / 1000.0).roundToInt() },
+                numSuffix = " k",
+            )
+            createTopStat(
+                analysis,
+                isTop,
+                CustomEmojis.DOWNSTATES,
+                "Downstates   :",
+                sortBy = { it.downstates },
+            )
+        }.toString()
 
     private fun <T : Comparable<T>> StringBuilder.createTopStat(
         analysis: RunAnalysis,

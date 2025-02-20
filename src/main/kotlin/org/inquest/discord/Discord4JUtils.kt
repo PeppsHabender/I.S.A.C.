@@ -1,16 +1,40 @@
 package org.inquest.discord
 
+import discord4j.core.`object`.command.ApplicationCommandOption
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.InteractionReplyEditMono
 import discord4j.core.spec.MessageCreateFields
+import discord4j.discordjson.json.ApplicationCommandOptionData
+import discord4j.discordjson.json.ImmutableApplicationCommandRequest
 import discord4j.discordjson.possible.Possible
 import discord4j.rest.util.Color
 import java.io.ByteArrayInputStream
 
+fun ImmutableApplicationCommandRequest.Builder.withStringOption(
+    name: String,
+    description: String = "",
+    required: Boolean = true,
+) = addOption(baseCommandOption(name, description, required).type(ApplicationCommandOption.Type.STRING.value).build())
+
+fun ImmutableApplicationCommandRequest.Builder.withBooleanOption(
+    name: String,
+    description: String = "",
+    required: Boolean = true,
+) = addOption(baseCommandOption(name, description, required).type(ApplicationCommandOption.Type.BOOLEAN.value).build())
+
+private fun baseCommandOption(
+    name: String,
+    description: String = "",
+    required: Boolean = true,
+) = ApplicationCommandOptionData.builder()
+    .name(name)
+    .description(description)
+    .required(required)
+
 fun createEmbed(
     description: String,
     title: String? = null,
-    color: Color? = null
+    color: Color? = null,
 ): EmbedCreateSpec = EmbedCreateSpec
     .builder()
     .description(description)
@@ -20,17 +44,17 @@ fun createEmbed(
 fun InteractionReplyEditMono.withEmbed(
     description: String,
     title: String? = null,
-    color: Color? = null
+    color: Color? = null,
 ) = withEmbeds(createEmbed(description, title, color))
 
 fun InteractionReplyEditMono.withFile(
     fileName: String,
-    bytes: ByteArrayInputStream
+    bytes: ByteArrayInputStream,
 ) = withFiles(MessageCreateFields.File.of(fileName, bytes))
 
 fun InteractionReplyEditMono.withFile(
     fileName: String,
-    str: String
+    str: String,
 ) = withFile(fileName, str.byteInputStream())
 
 private fun <T> (T)?.possible(): Possible<T> = if (this == null) Possible.absent() else Possible.of(this)

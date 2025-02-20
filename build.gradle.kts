@@ -16,6 +16,7 @@ val quarkusPlatformVersion: String by project
 
 dependencies {
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
+    implementation("io.quarkus:quarkus-scheduler")
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-rest-client-jackson")
     implementation("io.quarkus:quarkus-rest-jackson")
@@ -51,7 +52,10 @@ allOpen {
 
 spotless {
     kotlin {
-        ktfmt().kotlinlangStyle()
+        ktlint().editorConfigOverride(mapOf(
+            "ktlint_function_signature_body_expression_wrapping" to "default",
+            "ktlint_code_style" to "intellij_idea"
+        ))
     }
 }
 

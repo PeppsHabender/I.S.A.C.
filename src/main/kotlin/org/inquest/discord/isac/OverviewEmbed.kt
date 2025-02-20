@@ -5,13 +5,19 @@ import discord4j.core.spec.EmbedCreateSpec
 import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
-import java.text.NumberFormat
-import java.util.Locale
 import org.inquest.entities.Pull
 import org.inquest.entities.RunAnalysis
 import org.inquest.utils.optionAsString
+import java.text.NumberFormat
+import java.util.Locale
 
+/**
+ * The embed for the general overview of all logs. Contains duration information, number of pulls, etc
+ */
 object OverviewEmbed {
+    /**
+     * @see OverviewEmbed
+     */
     fun createOverviewEmbed(
         analysis: RunAnalysis,
         event: ChatInputInteractionEvent,
@@ -22,52 +28,52 @@ object OverviewEmbed {
             .append(createPulls(analysis))
             .toString(),
         (event.optionAsString("name") ?: "Run Analysis") +
-                " " +
-                analysis.start.toDiscordTimestamp(),
-        CustomColors.TRANSPARENT_COLOR
+            " " +
+            analysis.start.toDiscordTimestamp(),
+        CustomColors.TRANSPARENT_COLOR,
     )
 
-    private fun createTime(analysis: RunAnalysis): String =
-        StringBuilder(CustomEmojis.TIME)
-            .apply {
-                appendMono("Time :")
-                space()
-                appendBold(analysis.duration.inRoundedMinutes())
-                space()
-                appendBold("min")
-                append(" |")
-                append(CustomEmojis.INFIGHT)
-                appendBold((analysis.duration - analysis.downtime).inRoundedMinutes())
-                space()
-                appendBold("min")
-                append(" |")
-                append(CustomEmojis.DOWNTIME)
-                appendBold(analysis.downtime.inRoundedMinutes())
-                space()
-                appendBold("min")
-            }
-            .toString()
+    private fun createTime(analysis: RunAnalysis): String = StringBuilder(CustomEmojis.TIME)
+        .apply {
+            appendMono("Time :")
+            space()
+            appendBold(analysis.duration.inRoundedMinutes())
+            space()
+            appendBold("min")
+            append(" |")
+            append(CustomEmojis.INFIGHT)
+            appendBold((analysis.duration - analysis.downtime).inRoundedMinutes())
+            space()
+            appendBold("min")
+            append(" |")
+            append(CustomEmojis.DOWNTIME)
+            appendBold(analysis.downtime.inRoundedMinutes())
+            space()
+            appendBold("min")
+        }.toString()
 
-    private fun createPulls(analysis: RunAnalysis): String =
-        StringBuilder()
-            .apply {
-                createPullsAnalysis("Pulls:", CustomEmojis.PULLS, analysis.pulls)
+    private fun createPulls(analysis: RunAnalysis): String = StringBuilder()
+        .apply {
+            createPullsAnalysis("Pulls:", CustomEmojis.PULLS, analysis.pulls)
 
-                val cms = analysis.pulls.filter { it.cm }
-                if (cms.isNotEmpty()) {
-                    appendLine()
-                    createPullsAnalysis("CMs  :", CustomEmojis.CM_SUCCESS, cms)
-                }
-
+            val cms = analysis.pulls.filter { it.cm }
+            if (cms.isNotEmpty()) {
                 appendLine()
-                append(CustomEmojis.GROUP_DPS)
-                appendMono("Dps  :")
-                space()
-                appendBold(NumberFormat.getInstance(Locale.GERMAN).format(analysis.groupDps))
+                createPullsAnalysis("CMs  :", CustomEmojis.CM_SUCCESS, cms)
             }
-            .toString()
 
-    private fun StringBuilder.createPullsAnalysis(title: String, emoji: String, pulls: List<Pull>) {
+            appendLine()
+            append(CustomEmojis.GROUP_DPS)
+            appendMono("Dps  :")
+            space()
+            appendBold(NumberFormat.getInstance(Locale.GERMAN).format(analysis.groupDps))
+        }.toString()
+
+    private fun StringBuilder.createPullsAnalysis(
+        title: String,
+        emoji: String,
+        pulls: List<Pull>,
+    ) {
         append(emoji)
         appendMono(title)
         space()

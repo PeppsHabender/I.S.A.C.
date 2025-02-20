@@ -23,8 +23,10 @@ data class Pull(
     val remainingHp: Double,
 )
 
-class PlayerAnalysis(val name: String) {
-    private val profCount: MutableMap<String, Int> = mutableMapOf()
+class PlayerAnalysis(
+    val name: String,
+) {
+    private val professions: MutableList<String> = mutableListOf()
     private val dps: MutableList<Int> = mutableListOf()
     private val dpsPos: MutableList<Int> = mutableListOf()
     private val heal: MutableList<Int> = mutableListOf()
@@ -48,7 +50,10 @@ class PlayerAnalysis(val name: String) {
 
     fun avgDpsPos() = this.dpsPos.average()
 
-    fun withHeal(heal: Int, barrier: Int) {
+    fun withHeal(
+        heal: Int,
+        barrier: Int,
+    ) {
         this.heal += heal
         this.barrier += barrier
     }
@@ -58,8 +63,8 @@ class PlayerAnalysis(val name: String) {
     fun avgBarrier() = this.barrier.average()
 
     fun playedProfession(profession: String) {
-        this.profCount.getOrPut(profession) { 1 }
+        this.professions += profession
     }
 
-    fun mostPlayed(): String = this.profCount.maxBy { it.value }.key
+    fun mostPlayed(): String = this.professions.groupingBy { it }.eachCount().maxBy { it.value }.key
 }

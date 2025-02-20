@@ -8,11 +8,23 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
 
+/**
+ * Base class for listening to discord sent events.
+ */
 interface EventListener<T : Event> {
+    /**
+     * Type of the event to listen to
+     */
     val eventType: Class<T>
 
-    fun execute(event: T): Mono<Void?>?
+    /**
+     * Executed when the event was received
+     */
+    fun execute(event: T): Mono<Void>
 
+    /**
+     * Executed in case of an error in [execute]
+     */
     fun handleError(error: Throwable?): Mono<Void> {
         LOG.error("Unable to process " + eventType.simpleName, error)
         return Mono.empty()
@@ -23,10 +35,22 @@ interface EventListener<T : Event> {
     }
 }
 
+/**
+ * Base class for registering slash commands.
+ */
 interface CommandListener {
+    /**
+     * Name of the command
+     */
     val name: String
 
+    /**
+     * Builds the command relative to the given [gatewayClient]
+     */
     fun build(gatewayClient: GatewayDiscordClient): ApplicationCommandRequest
 
+    /**
+     * Executes when a user calls this command.
+     */
     fun handle(event: ChatInputInteractionEvent): Mono<Void>
 }
