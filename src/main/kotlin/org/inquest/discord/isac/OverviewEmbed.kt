@@ -35,7 +35,7 @@ object OverviewEmbed {
 
     private fun createTime(analysis: RunAnalysis): String = StringBuilder(CustomEmojis.TIME)
         .apply {
-            appendMono("Time :")
+            appendMono("Time  >>")
             space()
             appendBold(analysis.duration.inRoundedMinutes())
             space()
@@ -54,17 +54,17 @@ object OverviewEmbed {
 
     private fun createPulls(analysis: RunAnalysis): String = StringBuilder()
         .apply {
-            createPullsAnalysis("Pulls:", CustomEmojis.PULLS, analysis.pulls)
+            createPullsAnalysis("Pulls >>", CustomEmojis.PULLS, analysis.pulls)
 
             val cms = analysis.pulls.filter { it.cm }
             if (cms.isNotEmpty()) {
                 appendLine()
-                createPullsAnalysis("CMs  :", CustomEmojis.CM_SUCCESS, cms)
+                createPullsAnalysis("CMs   >>", CustomEmojis.CM_SUCCESS, cms)
             }
 
             appendLine()
             append(CustomEmojis.GROUP_DPS)
-            appendMono("Dps  :")
+            appendMono("Dps   >>")
             space()
             appendBold(NumberFormat.getInstance(Locale.GERMAN).format(analysis.groupDps))
         }.toString()

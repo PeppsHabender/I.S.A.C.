@@ -14,7 +14,8 @@ data class RunAnalysis(
 )
 
 data class Pull(
-    val bossId: Long,
+    val eiEncounterId: Long,
+    val triggerId: Long,
     val boss: String,
     val link: String,
     val success: Boolean,
@@ -23,48 +24,45 @@ data class Pull(
     val remainingHp: Double,
 )
 
+data class Profession(val name: String, val isCondi: Boolean)
+
+data class PlayerPull(
+    val profession: Profession = Profession("*", false),
+    val dps: Int = 0,
+    val dpsPos: Int = 11,
+    val heal: Int = 0,
+    val barrier: Int = 0,
+    val cc: Int = 0,
+    val resTime: Double = 0.0,
+    val condiCleanse: Int = 0,
+    val boonStrips: Int = 0,
+    val damageTaken: Int = 0,
+    val downstates: Int = 0,
+)
+
 class PlayerAnalysis(
     val name: String,
+    val pulls: MutableMap<Pull, PlayerPull> = mutableMapOf(),
 ) {
-    private val professions: MutableList<String> = mutableListOf()
-    private val dps: MutableList<Int> = mutableListOf()
-    private val dpsPos: MutableList<Int> = mutableListOf()
-    private val heal: MutableList<Int> = mutableListOf()
-    private val barrier: MutableList<Int> = mutableListOf()
-    var cc: Int = 0
-    var resTime: Double = 0.0
-    var condiCleanse: Int = 0
-    var boonStrips: Int = 0
-    var damageTaken: Int = 0
-    var downstates: Int = 0
+    fun mostPlayed(): String = this.pulls.values.map { it.profession }.groupingBy { it.name }.eachCount().maxBy { it.value }.key
 
-    fun withDps(dps: Int) {
-        this.dps += dps
-    }
+    fun avgDps() = this.pulls.values.map { it.dps }.average()
 
-    fun avgDps() = this.dps.average()
+    fun avgDpsPos() = this.pulls.values.map { it.dpsPos }.average()
 
-    fun withDpsPos(dpsPos: Int) {
-        this.dpsPos += dpsPos
-    }
+    fun avgHeal() = this.pulls.values.map { it.heal }.average()
 
-    fun avgDpsPos() = this.dpsPos.average()
+    fun avgBarrier() = this.pulls.values.map { it.barrier }.average()
 
-    fun withHeal(
-        heal: Int,
-        barrier: Int,
-    ) {
-        this.heal += heal
-        this.barrier += barrier
-    }
+    fun cc() = this.pulls.values.sumOf { it.cc }
 
-    fun avgHeal() = this.heal.average()
+    fun resTime() = this.pulls.values.sumOf { it.resTime }
 
-    fun avgBarrier() = this.barrier.average()
+    fun condiCleanse() = this.pulls.values.sumOf { it.condiCleanse }
 
-    fun playedProfession(profession: String) {
-        this.professions += profession
-    }
+    fun boonStrips() = this.pulls.values.sumOf { it.boonStrips }
 
-    fun mostPlayed(): String = this.professions.groupingBy { it }.eachCount().maxBy { it.value }.key
+    fun damageTaken() = this.pulls.values.sumOf { it.damageTaken }
+
+    fun downstates() = this.pulls.values.sumOf { it.downstates }
 }

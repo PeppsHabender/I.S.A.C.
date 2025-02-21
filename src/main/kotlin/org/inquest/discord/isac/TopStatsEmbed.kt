@@ -41,7 +41,7 @@ object TopStatsEmbed {
                 analysis,
                 isTop,
                 CustomEmojis.DPS,
-                "Dps          :",
+                "Dps           >>",
                 sortBy = { it.avgDpsPos() },
                 extractor = { it.avgDps() },
                 formatter = { (it / 1000).format("#.# k") },
@@ -52,15 +52,15 @@ object TopStatsEmbed {
                 analysis,
                 isTop,
                 CustomEmojis.CC,
-                "Cc           :",
-                sortBy = { it.cc },
+                "Cc            >>",
+                sortBy = { it.cc() },
             )
             createTopStat(
                 analysis,
                 isTop,
                 CustomEmojis.RES_TIME,
-                "Res Time     :",
-                sortBy = { it.resTime },
+                "Res Time      >>",
+                sortBy = { it.resTime() },
                 formatter = { it.roundToInt() },
                 numSuffix = " s",
             )
@@ -68,15 +68,15 @@ object TopStatsEmbed {
                 analysis,
                 isTop,
                 CustomEmojis.CONDI_CLEANSE,
-                "Condi Cleanse:",
-                sortBy = { it.condiCleanse },
+                "Condi Cleanse >>",
+                sortBy = { it.condiCleanse() },
             )
             createTopStat(
                 analysis,
                 isTop,
                 CustomEmojis.BOON_STRIPS,
-                "Boon Strips  :",
-                sortBy = { it.boonStrips },
+                "Boon Strips   >>",
+                sortBy = { it.boonStrips() },
             )
             if (
                 event.optionAsBoolean("with_heal") &&
@@ -86,7 +86,7 @@ object TopStatsEmbed {
                     analysis,
                     isTop,
                     CustomEmojis.HEAL,
-                    "Hps          :",
+                    "Hps           >>",
                     sortBy = { it.avgHeal() },
                     formatter = { (it / 1000).format("#.# k") },
                 )
@@ -94,7 +94,7 @@ object TopStatsEmbed {
                     analysis,
                     isTop,
                     CustomEmojis.BARRIER,
-                    "Bps          :",
+                    "Bps           >>",
                     sortBy = { it.avgBarrier() },
                     formatter = { (it / 1000).format("#.# k") },
                 )
@@ -103,8 +103,8 @@ object TopStatsEmbed {
                 analysis,
                 isTop,
                 CustomEmojis.DMG_TAKEN,
-                "Damage Taken :",
-                sortBy = { it.damageTaken },
+                "Damage Taken  >>",
+                sortBy = { it.damageTaken() },
                 formatter = { (it / 1000.0).roundToInt() },
                 numSuffix = " k",
             )
@@ -112,8 +112,8 @@ object TopStatsEmbed {
                 analysis,
                 isTop,
                 CustomEmojis.DOWNSTATES,
-                "Downstates   :",
-                sortBy = { it.downstates },
+                "Downstates    >>",
+                sortBy = { it.downstates() },
             )
         }.toString()
 

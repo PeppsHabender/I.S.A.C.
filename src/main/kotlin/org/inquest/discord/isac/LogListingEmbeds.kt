@@ -27,7 +27,7 @@ object LogListingEmbeds {
             pulls
                 .filter { it.success }
                 .forEach {
-                    bossData.emoteFor(it.bossId, it.cm)?.let { emote ->
+                    bossData.emoteFor(it.eiEncounterId, it.cm)?.let { emote ->
                         append("$emote ")
                     }
 
@@ -61,7 +61,7 @@ object LogListingEmbeds {
                 .forEach {
                     append("[")
                     if (it.cm) append("[CM] ")
-                    append(bossData.shortName(it.bossId) ?: it.boss)
+                    append(bossData.shortName(it.eiEncounterId) ?: it.boss)
                     space()
                     appendMono("(${(it.remainingHp * 100).format("#.##")}%)")
                     append("](")

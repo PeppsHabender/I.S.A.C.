@@ -21,3 +21,7 @@ fun JsonLog.endTime(): OffsetDateTime = this.timeEndStd?.let { OffsetDateTime.pa
 fun ChatInputInteractionEvent.optionAsString(option: String): String? = getOption(option).flatMap { it.value }.map { it.asString() }.orElse(null)
 
 fun ChatInputInteractionEvent.optionAsBoolean(option: String, default: Boolean = false): Boolean = getOption(option).flatMap { it.value }.map { it.asBoolean() }.orElse(default)
+
+fun String.uppercased(vararg idxs: Int) = this.mapIndexed { i, c ->
+    if (i in idxs) c.uppercase() else c.lowercase()
+}.joinToString(separator = "")

@@ -3,16 +3,21 @@ package org.inquest.discord.isac
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.spec.EmbedCreateSpec
+import discord4j.core.spec.StartThreadSpec
 import discord4j.discordjson.json.ApplicationCommandRequest
+import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.eclipse.microprofile.context.ManagedExecutor
 import org.eclipse.microprofile.rest.client.inject.RestClient
-import org.inquest.AnalyzerService
+import org.inquest.AnalysisService
 import org.inquest.clients.DpsReportClient
 import org.inquest.discord.CommandListener
 import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis
+import org.inquest.discord.createMessageOrShowError
+import org.inquest.discord.dynamic
+import org.inquest.discord.isac.ErrorEmbeds.analyzeWmException
 import org.inquest.discord.isac.ErrorEmbeds.handleAnalyzeException
 import org.inquest.discord.isac.ErrorEmbeds.handleFetchingException
 import org.inquest.discord.isac.LogListingEmbeds.createSuccessLogsEmbed
@@ -23,9 +28,11 @@ import org.inquest.discord.withBooleanOption
 import org.inquest.discord.withStringOption
 import org.inquest.entities.RunAnalysis
 import org.inquest.utils.BossData
+import org.inquest.utils.optionAsBoolean
 import org.inquest.utils.optionAsString
 import org.inquest.utils.startTime
 import org.inquest.utils.toMono
+import org.inquest.utils.toUni
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -54,7 +61,7 @@ class IsacCommand : CommandListener {
      * Used to analyze downloaded logs into a [RunAnalysis]
      */
     @Inject
-    private lateinit var analyzerService: AnalyzerService
+    private lateinit var analysisService: AnalysisService
 
     /**
      * Isac specific boss data
@@ -68,6 +75,9 @@ class IsacCommand : CommandListener {
     @Inject
     private lateinit var managedExecutor: ManagedExecutor
 
+    @Inject
+    private lateinit var wingmanEmbed: WingmanEmbed
+
     /**
      * The discord client which will be initialized on build
      */
@@ -80,9 +90,10 @@ class IsacCommand : CommandListener {
             .builder()
             .name(name)
             .description("Analyzes the given list of dps.report links")
-            .withStringOption("logs", "The list of logs to be analyzed, ideally separated by white spaces.")
-            .withStringOption("name", "Name of the run.", required = false)
-            .withBooleanOption("with_heal", "Include heal/barrier stats.", required = false)
+            .withStringOption(LOGS_OPTION, "The list of logs to be analyzed, ideally separated by white spaces.")
+            .withStringOption(NAME_OPTION, "Name of the run.", required = false)
+            .withBooleanOption(HEAL_OPTION, "Include heal/barrier stats.", required = false)
+            .withBooleanOption(WM_OPTION, "Include a wingman bench dps comparison.", required = false)
             .build()
     }
 
@@ -102,43 +113,61 @@ class IsacCommand : CommandListener {
         }.collectSortedList { o1, o2 -> o1.second.startTime().compareTo(o2.second.startTime()) }
         .onErrorResume { event.handleFetchingException() }
         .flatMap {
-            if (it == null) Mono.empty() else Mono.just(this.analyzerService.analyze(it))
+            if (it == null) Mono.empty() else Mono.just(this.analysisService.analyze(it))
         }.onErrorResume { event.handleAnalyzeException(it) }
-        .flatMap {
-            if (it == null) {
-                Mono.empty()
-            } else {
-                event.editReply().withEmbeds(*it.createEmbeds(event).toTypedArray())
+        .flatMap { analysis ->
+            event.editReply().withEmbeds(*analysis.createEmbeds(event).toTypedArray()).map { analysis to it }
+        }.flatMap { (analysis, msg) ->
+            if (!event.optionAsBoolean(WM_OPTION, true)) {
+                return@flatMap Mono.empty()
             }
-        }.then()
+
+            msg.startThread(StartThreadSpec.builder().name("More Details").build()).map { analysis to it }
+        }.toUni().call { (analysis, thread) ->
+            if (event.optionAsBoolean(WM_OPTION, true)) {
+                thread.createMessageOrShowError(
+                    { wingmanEmbed.createWingmanEmbed(analysis.pulls, analysis.playerStats).dynamic() },
+                ) {
+                    analyzeWmException()
+                }.toUni()
+            } else {
+                Uni.createFrom().voidItem()
+            }
+        }.toMono().then()
 
     private fun ChatInputInteractionEvent.extractLogs(): Stream<String> = DPS_REPORT_RGX.findAll(optionAsString("logs")!!).map { it.value }.asStream()
 
-    private fun RunAnalysis.createEmbeds(event: ChatInputInteractionEvent): List<EmbedCreateSpec> = listOf(
-        createOverviewEmbed(this, event),
-        createTopStatsEmbed(
+    private fun RunAnalysis.createEmbeds(event: ChatInputInteractionEvent): List<EmbedCreateSpec> {
+        val embeds = mutableListOf<EmbedCreateSpec>()
+        embeds += createOverviewEmbed(this, event).dynamic()
+        embeds += createTopStatsEmbed(
             this,
             event,
             CustomEmojis.TOP_STATS,
             "Top Stats",
             0,
             CustomColors.GOLD_COLOR,
-        ),
-        createTopStatsEmbed(
+        ).dynamic()
+        embeds += createTopStatsEmbed(
             this,
             event,
             CustomEmojis.SEC_TOP_STATS,
             "Second Best",
             1,
             CustomColors.SILVER_COLOR,
-        ),
-        createSuccessLogsEmbed(this, bossData),
-    ).let { ls ->
-        if (this.pulls.any { !it.success }) ls + createWipeLogsEmbed(this, bossData) else ls
+        ).dynamic()
+        embeds += createSuccessLogsEmbed(this, bossData).dynamic()
+        if (this.pulls.any { !it.success }) embeds += createWipeLogsEmbed(this, bossData)
+
+        return embeds
     }
 
     companion object {
         private val DPS_REPORT_RGX =
             Regex("https://(?:[ab]\\.)?dps.report/[\\w-]+(?=\\s*?https|$|\\s)")
+        private const val LOGS_OPTION = "logs"
+        private const val NAME_OPTION = "name"
+        private const val HEAL_OPTION = "with_heal"
+        private const val WM_OPTION = "compare_wingman"
     }
 }
