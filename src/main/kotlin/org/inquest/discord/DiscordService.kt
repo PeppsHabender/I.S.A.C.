@@ -16,6 +16,7 @@ import jakarta.annotation.PostConstruct
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.eclipse.microprofile.config.inject.ConfigProperty
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @ConfigMapping(prefix = "discord")
@@ -33,12 +34,15 @@ interface DiscordSettings {
 @Startup
 @ApplicationScoped
 class DiscordService {
-    @Inject private lateinit var settings: DiscordSettings
+    @Inject
+    private lateinit var settings: DiscordSettings
 
-    @All @Inject
+    @All
+    @Inject
     lateinit var eventListeners: MutableList<EventListener<*>>
 
-    @All @Inject
+    @All
+    @Inject
     lateinit var commands: MutableList<CommandListener>
 
     @PostConstruct
@@ -70,24 +74,57 @@ class DiscordService {
     }
 
     private fun GatewayDiscordClient.installSlashCommands() {
-        commands.forEach { cmd ->
-            if (settings.guildId() != -1L) {
-                this.restClient.applicationService
-                    .createGuildApplicationCommand(
-                        settings.applicationId(),
-                        settings.guildId(),
-                        ApplicationCommandRequest.builder()
-                            .from(cmd.build(this))
-                            .name(cmd.devName())
-                            .build(),
-                    ).subscribe()
-            } else if (!LaunchMode.current().isDevOrTest) {
-                this.restClient.applicationService
-                    .createGlobalApplicationCommand(settings.applicationId(), cmd.build(this))
-                    .subscribe()
-            }
+        if (settings.guildId() != -1L) {
+            deleteOldGuildCommands().then(Flux.fromIterable(commands).flatMap { registerGuildCommand(it) }.then()).subscribe()
+        }
+
+        if (!LaunchMode.current().isDevOrTest) {
+            deleteOldGlobalCommands().then(Flux.fromIterable(commands).map { registerGlobalCommand(it) }.then()).subscribe()
         }
     }
+
+    private fun GatewayDiscordClient.deleteOldGuildCommands(): Mono<Void> = commands.map { it.devName() }.toSet().let { cmds ->
+        this.restClient
+            .applicationService
+            .getGuildApplicationCommands(settings.applicationId(), settings.guildId())
+            .filter { it.name() !in cmds }
+            .map { it.id() }
+            .flatMap {
+                println(it)
+                this.restClient
+                    .applicationService
+                    .deleteGuildApplicationCommand(settings.applicationId(), settings.guildId(), it.asLong())
+            }.then()
+    }
+
+    private fun GatewayDiscordClient.registerGuildCommand(cmd: CommandListener): Mono<Void> = this.restClient
+        .applicationService
+        .createGuildApplicationCommand(
+            settings.applicationId(),
+            settings.guildId(),
+            ApplicationCommandRequest.builder()
+                .from(cmd.build(this))
+                .name(cmd.devName())
+                .build(),
+        ).then()
+
+    private fun GatewayDiscordClient.deleteOldGlobalCommands(): Mono<Void> = commands.map { it.name }.toSet().let { cmds ->
+        this.restClient
+            .applicationService
+            .getGlobalApplicationCommands(settings.applicationId())
+            .filter { it.name() !in cmds }
+            .map { it.id() }
+            .flatMap {
+                this.restClient
+                    .applicationService
+                    .deleteGlobalApplicationCommand(settings.applicationId(), it.asLong())
+            }.then()
+    }
+
+    private fun GatewayDiscordClient.registerGlobalCommand(cmd: CommandListener): Mono<Void> = this.restClient
+        .applicationService
+        .createGlobalApplicationCommand(settings.applicationId(), cmd.build(this))
+        .then()
 
     private fun GatewayDiscordClient.installCommandHandlers() {
         on(ChatInputInteractionEvent::class.java) { e ->
