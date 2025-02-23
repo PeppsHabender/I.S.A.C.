@@ -16,10 +16,12 @@ fun Duration.inRoundedMinutes() = (inWholeSeconds / 60.0).roundToInt()
 /**
  * @return A string with [this] formatted according to [pattern]
  */
-fun Double.format(pattern: String) = DecimalFormat(pattern, DecimalFormatSymbols(Locale.GERMAN)).format(this)
+fun Double.format(pattern: String) = DecimalFormat(pattern, DecimalFormatSymbols(Locale.GERMAN)).also {
+    it.minimumFractionDigits = 1
+}.format(this)
 
 /**
- * @return A string with [this] formatted according to [pattern]
+ * Pads this with [padding] spaces
  */
 fun Int.padded(padding: Int) = "%1$${padding}s".format(this)
 

@@ -247,9 +247,6 @@
     "boss": "River of Souls",
     "eliteInsightsId": 132354,
     "validForTopStat": false,
-    "emote": {
-      "normal": "<:rr:1202661651531300874>"
-    },
     "shortname": "River",
     "targets": [
       0
@@ -362,11 +359,7 @@
     },
     "shortname": "Qad",
     "targets": [
-      0,
-      1,
-      2,
-      3,
-      4
+      0
     ],
     "phases": [
       0
@@ -776,6 +769,18 @@
       "challenge": "<:febecm:1340795077207003257>"
     },
     "shortname": "ToF",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Spirit Race",
+    "eliteInsightsId": 131332,
+    "validForTopStat": false,
+    "shortname": "Spirit Race",
     "targets": [
       0
     ],

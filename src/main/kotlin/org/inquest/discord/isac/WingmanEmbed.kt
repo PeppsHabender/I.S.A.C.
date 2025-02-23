@@ -13,6 +13,7 @@ import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
 import org.inquest.entities.PlayerAnalysis
 import org.inquest.entities.Pull
+import org.inquest.utils.BossData
 
 /**
  * Uses the [wingmanService] and [WingmanAnalysisService] to create an embed which compares the dps performance
@@ -25,6 +26,9 @@ class WingmanEmbed {
 
     @Inject
     private lateinit var analysisService: WingmanAnalysisService
+
+    @Inject
+    private lateinit var bossData: BossData
 
     fun createWingmanEmbed(bosses: List<Pull>, players: List<PlayerAnalysis>): EmbedCreateSpec = createEmbed(
         createDescription(
@@ -82,7 +86,8 @@ class WingmanEmbed {
             CustomEmojis.professionEmote(it)?.let(::append)
         }
         appendMono(title)
-        appendBold(" " + (comparison.percent * 100).format("#.#") + " %")
+        space()
+        appendBold((comparison.percent * 100).format("#.#") + " %")
 
         if (comparison.isCondi == null) {
             space()
@@ -99,5 +104,9 @@ class WingmanEmbed {
         append((comparison.bench / 1000).format("#.# k"))
         append(")")
         comparison.log?.let { append("]($it)") }
+        comparison.eiEncounterId?.let {
+            space()
+            bossData.emoteFor(it, comparison.cm)?.let(::append)
+        }
     }
 }

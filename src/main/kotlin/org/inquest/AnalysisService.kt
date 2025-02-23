@@ -52,6 +52,7 @@ class AnalysisService {
                         link,
                         log.success,
                         log.isCM,
+                        log.isEmbo(),
                         logDuration,
                         (targetAlive?.finalHealth ?: 0) /
                             (targetAlive?.totalHealth ?: 1).toDouble(),
@@ -112,6 +113,12 @@ class AnalysisService {
             it.pulls[pull] = PlayerPull()
         }
     }
+
+    private fun JsonLog.isEmbo(): Boolean = (
+        this.presentInstanceBuffs.firstOrNull {
+            it[0] == 68087L
+        }?.get(1) ?: 0
+        ) > 0
 
     private fun JsonActorParent.JsonPlayer.fetchDps(bossId: Long?): Pair<Int, Boolean> = this.dpsTargets
         .slice(bossData.targets(bossId))

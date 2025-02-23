@@ -91,9 +91,9 @@ class IsacCommand : CommandListener {
             .name(name)
             .description("Analyzes the given list of dps.report links")
             .withStringOption(LOGS_OPTION, "The list of logs to be analyzed, ideally separated by white spaces.")
-            .withStringOption(NAME_OPTION, "Name of the run.", required = false)
-            .withBooleanOption(HEAL_OPTION, "Include heal/barrier stats.", required = false)
-            .withBooleanOption(WM_OPTION, "Include a wingman bench dps comparison.", required = false)
+            .withStringOption(NAME_OPTION, "Name of the run. Default: 'Run Analysis'", required = false)
+            .withBooleanOption(HEAL_OPTION, "Include heal/barrier stats. Default: False", required = false)
+            .withBooleanOption(WM_OPTION, "Include a wingman bench dps comparison. Default: True", required = false)
             .build()
     }
 

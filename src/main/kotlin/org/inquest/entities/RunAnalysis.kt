@@ -20,6 +20,7 @@ data class Pull(
     val link: String,
     val success: Boolean,
     val cm: Boolean,
+    val embo: Boolean,
     val duration: Duration,
     val remainingHp: Double,
 )
