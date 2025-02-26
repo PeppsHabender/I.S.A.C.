@@ -13,6 +13,8 @@ data class RunAnalysis(
     val playerStats: List<PlayerAnalysis>,
 )
 
+data class BoonUptime(val highest: Double, val average: Double, val lowest: Double)
+
 data class Pull(
     val eiEncounterId: Long,
     val triggerId: Long,
@@ -23,12 +25,15 @@ data class Pull(
     val embo: Boolean,
     val duration: Duration,
     val remainingHp: Double,
-)
+) {
+    lateinit var boonUptimes: Map<Int, Map<IsacBoon, Double>>
+}
 
 data class Profession(val name: String, val isCondi: Boolean)
 
 data class PlayerPull(
     val profession: Profession = Profession("*", false),
+    val group: Int = -1,
     val dps: Int = 0,
     val dpsPos: Int = 11,
     val heal: Int = 0,
@@ -39,12 +44,12 @@ data class PlayerPull(
     val boonStrips: Int = 0,
     val damageTaken: Int = 0,
     val downstates: Int = 0,
+    val isSupport: Long? = null,
+    val maybeHealer: Boolean = false,
+    val boonUptimes: Map<IsacBoon, Double> = emptyMap(),
 )
 
-class PlayerAnalysis(
-    val name: String,
-    val pulls: MutableMap<Pull, PlayerPull> = mutableMapOf(),
-) {
+class PlayerAnalysis(val name: String, val pulls: MutableMap<Pull, PlayerPull> = mutableMapOf()) {
     fun mostPlayed(): String = this.pulls.values.map { it.profession }.groupingBy { it.name }.eachCount().maxBy { it.value }.key
 
     fun avgDps() = this.pulls.values.map { it.dps }.average()

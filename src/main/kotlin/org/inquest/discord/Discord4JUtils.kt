@@ -16,26 +16,16 @@ import kotlin.jvm.optionals.getOrNull
 /**
  * Adds a new string option to the current command.
  */
-fun ImmutableApplicationCommandRequest.Builder.withStringOption(
-    name: String,
-    description: String = "",
-    required: Boolean = true,
-) = addOption(baseCommandOption(name, description, required).type(ApplicationCommandOption.Type.STRING.value).build())
+fun ImmutableApplicationCommandRequest.Builder.withStringOption(name: String, description: String = "", required: Boolean = true) =
+    addOption(baseCommandOption(name, description, required).type(ApplicationCommandOption.Type.STRING.value).build())
 
 /**
  * Adds a new boolean option to the current command.
  */
-fun ImmutableApplicationCommandRequest.Builder.withBooleanOption(
-    name: String,
-    description: String = "",
-    required: Boolean = true,
-) = addOption(baseCommandOption(name, description, required).type(ApplicationCommandOption.Type.BOOLEAN.value).build())
+fun ImmutableApplicationCommandRequest.Builder.withBooleanOption(name: String, description: String = "", required: Boolean = true) =
+    addOption(baseCommandOption(name, description, required).type(ApplicationCommandOption.Type.BOOLEAN.value).build())
 
-private fun baseCommandOption(
-    name: String,
-    description: String = "",
-    required: Boolean = true,
-) = ApplicationCommandOptionData.builder()
+private fun baseCommandOption(name: String, description: String = "", required: Boolean = true) = ApplicationCommandOptionData.builder()
     .name(name)
     .description(description)
     .required(required)
@@ -89,11 +79,7 @@ private fun splitStringByNewLine(input: String, maxLength: Int = 4096): List<Str
 /**
  * Creates a new embed.
  */
-fun createEmbed(
-    description: String,
-    title: String? = null,
-    color: Color? = null,
-): EmbedCreateSpec = EmbedCreateSpec
+fun createEmbed(description: String, title: String? = null, color: Color? = null): EmbedCreateSpec = EmbedCreateSpec
     .builder()
     .description(description)
     .title(title.possible())
@@ -102,27 +88,19 @@ fun createEmbed(
 /**
  * Adds a new embed to this reply.
  */
-fun InteractionReplyEditMono.withEmbed(
-    description: String,
-    title: String? = null,
-    color: Color? = null,
-) = withEmbeds(createEmbed(description, title, color))
+fun InteractionReplyEditMono.withEmbed(description: String, title: String? = null, color: Color? = null) =
+    withEmbeds(createEmbed(description, title, color))
 
 /**
  * Adds a new file to this reply.
  */
-fun InteractionReplyEditMono.withFile(
-    fileName: String,
-    bytes: ByteArrayInputStream,
-) = withFiles(MessageCreateFields.File.of(fileName, bytes))
+fun InteractionReplyEditMono.withFile(fileName: String, bytes: ByteArrayInputStream) =
+    withFiles(MessageCreateFields.File.of(fileName, bytes))
 
 /**
  * Adds a new file to this reply.
  */
-fun InteractionReplyEditMono.withFile(
-    fileName: String,
-    str: String,
-) = withFile(fileName, str.byteInputStream())
+fun InteractionReplyEditMono.withFile(fileName: String, str: String) = withFile(fileName, str.byteInputStream())
 
 private fun <T> (T)?.possible(): Possible<T> = if (this == null) Possible.absent() else Possible.of(this)
 

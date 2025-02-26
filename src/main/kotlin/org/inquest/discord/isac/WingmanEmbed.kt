@@ -13,7 +13,7 @@ import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
 import org.inquest.entities.PlayerAnalysis
 import org.inquest.entities.Pull
-import org.inquest.utils.BossData
+import org.inquest.utils.IsacData
 
 /**
  * Uses the [wingmanService] and [WingmanAnalysisService] to create an embed which compares the dps performance
@@ -21,6 +21,13 @@ import org.inquest.utils.BossData
  */
 @ApplicationScoped
 class WingmanEmbed {
+    companion object {
+        private const val TITLE_FMT = "__%sDps Performance__"
+        private const val HEADER_FMT = "Compared to Wingman %sTop-Dps for Boss and Class."
+        private const val FOOTER = "Please note that there is no comparison for KO, as I.S.A.C. uses cleave dps there..."
+        private const val NO_DATA = "I.S.A.C. has no wingman data available right now..."
+    }
+
     @Inject
     private lateinit var wingmanService: WingmanService
 
@@ -28,38 +35,40 @@ class WingmanEmbed {
     private lateinit var analysisService: WingmanAnalysisService
 
     @Inject
-    private lateinit var bossData: BossData
+    private lateinit var isacData: IsacData
 
-    fun createWingmanEmbed(bosses: List<Pull>, players: List<PlayerAnalysis>): EmbedCreateSpec = createEmbed(
+    fun createWingmanEmbed(bosses: List<Pull>, players: List<PlayerAnalysis>, supports: Boolean = false): EmbedCreateSpec = createEmbed(
         createDescription(
-            this.analysisService.compareToWingman(bosses, players),
+            this.analysisService.compareToWingman(bosses, players, supports),
             players.associate { it.name to it.mostPlayed() },
+            supports,
         ),
-        title = "__Dps Performance__",
+        title = TITLE_FMT.format(if (supports)"Support " else ""),
         color = CustomColors.TRANSPARENT_COLOR,
-    ).withFooter(EmbedCreateFields.Footer.of("Please note that there is no comparison for KO, as I.S.A.C. uses cleave dps there...", null))
+    ).withFooter(EmbedCreateFields.Footer.of(FOOTER, null))
 
-    private fun createDescription(wingman: List<WingmanComparison>, professions: Map<String, String>) = StringBuilder().apply {
-        if (!wingmanService.hasData) {
-            appendBold("I.S.A.C. has no wingman data available right now...")
-            return@apply
-        }
+    private fun createDescription(wingman: List<WingmanComparison>, professions: Map<String, String>, supports: Boolean) =
+        StringBuilder().apply {
+            if (!wingmanService.hasData) {
+                appendBold(NO_DATA)
+                return@apply
+            }
 
-        header()
-        appendLine()
-        appendLine()
-
-        wingman.forEach {
-            createComparison(it, professions)
+            header(supports)
             appendLine()
             appendLine()
-        }
 
-        deleteRange(length - 2, length)
-    }.toString()
+            wingman.forEach {
+                createComparison(it, professions)
+                appendLine()
+                appendLine()
+            }
 
-    private fun StringBuilder.header() {
-        appendItalic("Compared to Wingman Top-DPS for Boss and Class.")
+            deleteRange(length - 2, length)
+        }.toString()
+
+    private fun StringBuilder.header(supports: Boolean) {
+        appendItalic(HEADER_FMT.format(if (supports) "Support-" else ""))
         appendLine()
         append("_")
         append("Wingman stats last updated on ")
@@ -78,15 +87,12 @@ class WingmanEmbed {
         createComparison("Lowest  >>", comparison.lowest)
     }
 
-    private fun StringBuilder.createComparison(
-        title: String,
-        comparison: DpsComparison,
-    ) {
+    private fun StringBuilder.createComparison(title: String, comparison: DpsComparison) {
         comparison.profession?.let {
             CustomEmojis.professionEmote(it)?.let(::append)
         }
         appendMono(title)
-        space()
+        comparison.boonEmote?.let(::append) ?: space()
         appendBold((comparison.percent * 100).format("#.#") + " %")
 
         if (comparison.isCondi == null) {
@@ -106,7 +112,7 @@ class WingmanEmbed {
         comparison.log?.let { append("]($it)") }
         comparison.eiEncounterId?.let {
             space()
-            bossData.emoteFor(it, comparison.cm)?.let(::append)
+            isacData.emoteFor(it, comparison.cm)?.let(::append)
         }
     }
 }

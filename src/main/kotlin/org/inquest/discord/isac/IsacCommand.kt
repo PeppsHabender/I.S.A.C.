@@ -20,6 +20,7 @@ import org.inquest.discord.dynamic
 import org.inquest.discord.isac.ErrorEmbeds.analyzeWmException
 import org.inquest.discord.isac.ErrorEmbeds.handleAnalyzeException
 import org.inquest.discord.isac.ErrorEmbeds.handleFetchingException
+import org.inquest.discord.isac.ErrorEmbeds.noLogsException
 import org.inquest.discord.isac.LogListingEmbeds.createSuccessLogsEmbed
 import org.inquest.discord.isac.LogListingEmbeds.createWipeLogsEmbed
 import org.inquest.discord.isac.OverviewEmbed.createOverviewEmbed
@@ -27,7 +28,7 @@ import org.inquest.discord.isac.TopStatsEmbed.createTopStatsEmbed
 import org.inquest.discord.withBooleanOption
 import org.inquest.discord.withStringOption
 import org.inquest.entities.RunAnalysis
-import org.inquest.utils.BossData
+import org.inquest.utils.IsacData
 import org.inquest.utils.optionAsBoolean
 import org.inquest.utils.optionAsString
 import org.inquest.utils.startTime
@@ -36,8 +37,6 @@ import org.inquest.utils.toUni
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
-import java.util.stream.Stream
-import kotlin.streams.asStream
 
 /**
  * Main entry point of the bot. Provides a slash command with the name 'analyze'.
@@ -67,7 +66,7 @@ class IsacCommand : CommandListener {
      * Isac specific boss data
      */
     @Inject
-    private lateinit var bossData: BossData
+    private lateinit var isacData: IsacData
 
     /**
      * Used to schedule the parallel downloading of logs
@@ -102,7 +101,7 @@ class IsacCommand : CommandListener {
     /**
      * Extracts logs from the user input, downloads the ei jsons, analyzes the downloaded logs and finally builds the embeded responses.
      */
-    private fun handleLogs(event: ChatInputInteractionEvent): Mono<Void> = Flux.fromStream(event.extractLogs())
+    private fun handleLogs(event: ChatInputInteractionEvent): Mono<Void> = Flux.fromIterable(event.extractLogs())
         .parallel()
         .runOn(Schedulers.fromExecutor(this.managedExecutor))
         .flatMap { link ->
@@ -111,9 +110,10 @@ class IsacCommand : CommandListener {
                 .map { Pair(link, it) }
                 .toMono()
         }.collectSortedList { o1, o2 -> o1.second.startTime().compareTo(o2.second.startTime()) }
+        .flatMap { if (it.isEmpty()) event.noLogsException() else Mono.just(it) }
         .onErrorResume { event.handleFetchingException() }
         .flatMap {
-            if (it == null) Mono.empty() else Mono.just(this.analysisService.analyze(it))
+            if (it.isEmpty()) Mono.empty() else Mono.just(this.analysisService.analyze(it))
         }.onErrorResume { event.handleAnalyzeException(it) }
         .flatMap { analysis ->
             event.editReply().withEmbeds(*analysis.createEmbeds(event).toTypedArray()).map { analysis to it }
@@ -133,9 +133,21 @@ class IsacCommand : CommandListener {
             } else {
                 Uni.createFrom().voidItem()
             }
+        }.call { (analysis, thread) ->
+            if (event.optionAsBoolean(WM_OPTION, true)) {
+                thread.createMessageOrShowError(
+                    { wingmanEmbed.createWingmanEmbed(analysis.pulls, analysis.playerStats, true).dynamic() },
+                ) {
+                    analyzeWmException()
+                }.toUni()
+            } else {
+                Uni.createFrom().voidItem()
+            }
         }.toMono().then()
 
-    private fun ChatInputInteractionEvent.extractLogs(): Stream<String> = DPS_REPORT_RGX.findAll(optionAsString("logs")!!).map { it.value }.asStream()
+    private fun ChatInputInteractionEvent.extractLogs(): List<String> = DPS_REPORT_RGX.findAll(optionAsString("logs")!!).map {
+        it.value
+    }.toList()
 
     private fun RunAnalysis.createEmbeds(event: ChatInputInteractionEvent): List<EmbedCreateSpec> {
         val embeds = mutableListOf<EmbedCreateSpec>()
@@ -156,8 +168,8 @@ class IsacCommand : CommandListener {
             1,
             CustomColors.SILVER_COLOR,
         ).dynamic()
-        embeds += createSuccessLogsEmbed(this, bossData).dynamic()
-        if (this.pulls.any { !it.success }) embeds += createWipeLogsEmbed(this, bossData)
+        embeds += createSuccessLogsEmbed(this, isacData).dynamic()
+        if (this.pulls.any { !it.success }) embeds += createWipeLogsEmbed(this, isacData)
 
         return embeds
     }

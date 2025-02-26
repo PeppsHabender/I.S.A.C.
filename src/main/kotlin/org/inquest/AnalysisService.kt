@@ -2,6 +2,7 @@ package org.inquest
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import org.inquest.entities.IsacBoon
 import org.inquest.entities.JsonActorParent
 import org.inquest.entities.JsonLog
 import org.inquest.entities.PlayerAnalysis
@@ -9,8 +10,9 @@ import org.inquest.entities.PlayerPull
 import org.inquest.entities.Profession
 import org.inquest.entities.Pull
 import org.inquest.entities.RunAnalysis
-import org.inquest.utils.BossData
+import org.inquest.utils.IsacData
 import org.inquest.utils.endTime
+import org.inquest.utils.mapWithPutDefault
 import org.inquest.utils.startTime
 import java.time.OffsetDateTime
 import kotlin.math.roundToInt
@@ -19,7 +21,8 @@ import kotlin.time.toKotlinDuration
 
 @ApplicationScoped
 class AnalysisService {
-    @Inject private lateinit var bossData: BossData
+    @Inject
+    private lateinit var isacData: IsacData
 
     fun analyze(logs: List<Pair<String, JsonLog>>): RunAnalysis = logs
         .sortedBy { it.second.startTime() }
@@ -32,35 +35,34 @@ class AnalysisService {
             val playerStats: MutableMap<String, PlayerAnalysis> = mutableMapOf()
 
             for ((link, log) in sorted) {
-                downtime +=
-                    if (end == null) {
-                        Duration.ZERO
-                    } else {
-                        java.time.Duration.between(end, log.startTime()).toKotlinDuration()
-                    }
+                downtime += if (end == null) {
+                    Duration.ZERO
+                } else {
+                    java.time.Duration.between(end, log.startTime()).toKotlinDuration()
+                }
                 end = log.endTime()
 
                 val logDuration =
                     java.time.Duration.between(log.startTime(), log.endTime())
                         .toKotlinDuration()
                 val targetAlive = log.targets.firstOrNull { it.finalHealth != 0 }
-                pulls +=
-                    Pull(
-                        log.eiEncounterID ?: -1,
-                        log.triggerID ?: -1,
-                        log.fightName ?: "Unknown",
-                        link,
-                        log.success,
-                        log.isCM,
-                        log.isEmbo(),
-                        logDuration,
-                        (targetAlive?.finalHealth ?: 0) /
-                            (targetAlive?.totalHealth ?: 1).toDouble(),
-                    )
+                pulls += Pull(
+                    log.eiEncounterID ?: -1,
+                    log.triggerID ?: -1,
+                    log.fightName ?: "Unknown",
+                    link,
+                    log.success,
+                    log.isCM,
+                    log.isEmbo(),
+                    logDuration,
+                    (targetAlive?.finalHealth ?: 0) /
+                        (targetAlive?.totalHealth ?: 1).toDouble(),
+                )
+
                 if (!log.success) {
                     downtime += logDuration
                     continue
-                } else if (this.bossData.ignore(log.eiEncounterID)) {
+                } else if (this.isacData.ignore(log.eiEncounterID)) {
                     continue
                 }
 
@@ -89,13 +91,19 @@ class AnalysisService {
         .let { players -> players.sumOf { it.value } }
 
     private fun addPlayerStats(base: MutableMap<String, PlayerAnalysis>, log: JsonLog, pull: Pull) {
-        log.players.filterNot { it.account == null }.map {
+        val boonUptimes: Map<Int, Map<IsacBoon, MutableList<Double>>> by mapWithPutDefault {
+            this.isacData.boonData.mapKeys { it.value }.mapValues { mutableListOf() }
+        }
+
+        log.players.filter { it.account != null && it.friendlyNPC == false && it.isFake == false }.map {
             it to it.fetchDps(log.eiEncounterID)
         }.sortedBy { it.second.first }.forEachIndexed { i, (player, dps) ->
+            val group = player.group ?: -1
             val analysis: PlayerAnalysis = base.computeIfAbsent(player.account!!, ::PlayerAnalysis)
 
             analysis.pulls += pull to PlayerPull(
                 Profession(player.profession ?: "*", dps.second),
+                group,
                 dps.first,
                 log.players.size - i - 1,
                 player.extHealingStats?.let { it.outgoingHealing[0].hps } ?: 0,
@@ -106,13 +114,40 @@ class AnalysisService {
                 player.support[0].boonStrips?.toInt() ?: 0,
                 player.totalDamageTaken[0].mapNotNull { it.totalDamage }.sum(),
                 player.combatReplayData?.down?.size ?: 0,
-            )
+                player.primaryBoon(log.eiEncounterID),
+                // For now.. Just assume that a player is a healer with a somewhat high heal score
+                (player.healing ?: 0) > 7,
+                player.boonUptimes(),
+            ).also {
+                it.boonUptimes.forEach { (boon, upt) -> boonUptimes.getValue(group)[boon]?.add(upt) }
+            }
         }
 
         base.values.filterNot { a -> log.players.any { it.account == a.name } }.forEach {
             it.pulls[pull] = PlayerPull()
         }
+
+        pull.boonUptimes = boonUptimes.mapValues { group -> group.value.mapValues { it.value.average() } }
     }
+
+    private fun JsonActorParent.JsonPlayer.boonUptimes(): Map<IsacBoon, Double> = this.buffUptimes.filter {
+        it.id in isacData.boonData && it.buffData[0].uptime != null
+    }.associate {
+        isacData.boonData[it.id]!! to it.buffData[0].uptime!!
+    }
+
+    private fun JsonActorParent.JsonPlayer.primaryBoon(encounterId: Long?): Long? = this.groupBuffs.filter {
+        it.id in IsacBoon.PRIM_BOONS
+    }.mapNotNull { boon ->
+        boon.id?.let { id -> boon.buffData.firstOrNull()?.generation?.let { id to it } }
+    }.filter { (_, gen) ->
+        if (encounterId == 132358L) {
+            // I hate dhuum kites
+            gen > 3
+        } else {
+            gen > 50
+        }
+    }.maxByOrNull { it.second }?.first
 
     private fun JsonLog.isEmbo(): Boolean = (
         this.presentInstanceBuffs.firstOrNull {
@@ -121,7 +156,7 @@ class AnalysisService {
         ) > 0
 
     private fun JsonActorParent.JsonPlayer.fetchDps(bossId: Long?): Pair<Int, Boolean> = this.dpsTargets
-        .slice(bossData.targets(bossId))
+        .slice(isacData.targets(bossId))
         .mapNotNull { dpsTargets ->
             dpsTargets[0].condiDps?.let { condi -> dpsTargets[0].powerDps?.let { condi to it } }
             // dpsTargets.slice(bossData.phases(bossId)).mapNotNull { it.dps }

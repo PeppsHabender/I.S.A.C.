@@ -18,10 +18,7 @@ object OverviewEmbed {
     /**
      * @see OverviewEmbed
      */
-    fun createOverviewEmbed(
-        analysis: RunAnalysis,
-        event: ChatInputInteractionEvent,
-    ): EmbedCreateSpec = createEmbed(
+    fun createOverviewEmbed(analysis: RunAnalysis, event: ChatInputInteractionEvent): EmbedCreateSpec = createEmbed(
         StringBuilder()
             .append(createTime(analysis))
             .appendLine()
@@ -69,11 +66,7 @@ object OverviewEmbed {
             appendBold(NumberFormat.getInstance(Locale.GERMAN).format(analysis.groupDps))
         }.toString()
 
-    private fun StringBuilder.createPullsAnalysis(
-        title: String,
-        emoji: String,
-        pulls: List<Pull>,
-    ) {
+    private fun StringBuilder.createPullsAnalysis(title: String, emoji: String, pulls: List<Pull>) {
         append(emoji)
         appendMono(title)
         space()

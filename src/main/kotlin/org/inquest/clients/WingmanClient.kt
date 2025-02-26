@@ -23,10 +23,7 @@ interface WingmanClient {
      */
     @GET
     @Path(BOSS_PATH)
-    fun fetchBossBench(
-        @QueryParam("bossID") bossId: Long,
-        @QueryParam("era") era: String,
-    ): Uni<BossBench>
+    fun fetchBossBench(@QueryParam("bossID") bossId: Long, @QueryParam("era") era: String): Uni<BossBench>
 
     /**
      * Fetches all bosses currently handled by wingman.

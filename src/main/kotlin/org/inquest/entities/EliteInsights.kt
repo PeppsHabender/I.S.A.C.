@@ -22,12 +22,7 @@ data class JsonDamageDist(
     val indirectDamage: Boolean? = null,
 )
 
-data class JsonSkill(
-    val castTime: Int? = null,
-    val duration: Int? = null,
-    val timeGained: Int? = null,
-    val quickness: Double? = null,
-)
+data class JsonSkill(val castTime: Int? = null, val duration: Int? = null, val timeGained: Int? = null, val quickness: Double? = null)
 
 data class JsonRotation(val id: Long? = null, val skills: List<JsonSkill> = listOf())
 
@@ -199,10 +194,7 @@ data class JsonDamageModifierItem(
     val totalDamage: Int? = null,
 )
 
-data class JsonDamageModifierData(
-    val id: Int? = null,
-    val damageModifiers: List<JsonDamageModifierItem> = listOf(),
-)
+data class JsonDamageModifierData(val id: Int? = null, val damageModifiers: List<JsonDamageModifierItem> = listOf())
 
 data class JsonBuffsGenerationData(
     val generation: Double? = null,
@@ -213,10 +205,7 @@ data class JsonBuffsGenerationData(
     val extended: Double? = null,
 )
 
-data class JsonPlayerBuffsGeneration(
-    val id: Long? = null,
-    val buffData: List<JsonBuffsGenerationData> = listOf(),
-)
+data class JsonPlayerBuffsGeneration(val id: Long? = null, val buffData: List<JsonBuffsGenerationData> = listOf())
 
 data class JsonDeathRecapDamageItem(
     val id: Long? = null,
@@ -232,12 +221,7 @@ data class JsonDeathRecap(
     val toKill: List<JsonDeathRecapDamageItem> = listOf(),
 )
 
-data class JsonConsumable(
-    val stack: Int? = null,
-    val duration: Int? = null,
-    val time: Long? = null,
-    val id: Long? = null,
-)
+data class JsonConsumable(val stack: Int? = null, val duration: Int? = null, val time: Long? = null, val id: Long? = null)
 
 sealed interface JsonActorParent {
     data class JsonActor(

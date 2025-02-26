@@ -3,9 +3,12 @@ package org.inquest
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.inquest.clients.WingmanService
+import org.inquest.entities.BossBench
 import org.inquest.entities.PlayerAnalysis
+import org.inquest.entities.Profession
 import org.inquest.entities.Pull
-import org.inquest.utils.BossData
+import org.inquest.utils.IsacData
+import org.inquest.utils.averageOrNull
 
 /**
  * Uses the [WingmanService] and provides a detailed dps comparison to the wingman benchmarks.
@@ -16,63 +19,81 @@ class WingmanAnalysisService {
     private lateinit var wingmanService: WingmanService
 
     @Inject
-    private lateinit var bossData: BossData
+    private lateinit var isacData: IsacData
 
-    fun compareToWingman(bosses: List<Pull>, players: List<PlayerAnalysis>): List<WingmanComparison> = players.mapNotNull { player ->
-        val comparisons = compareToBench(bosses, player).filterNot { it.profession == "*" }
-        if (comparisons.isEmpty()) return@mapNotNull null
+    fun compareToWingman(bosses: List<Pull>, players: List<PlayerAnalysis>, supports: Boolean): List<WingmanComparison> =
+        players.mapNotNull { player ->
+            val comparisons = compareToBench(bosses, player, supports).filterNot { it.profession == "*" }
+            if (comparisons.isEmpty()) return@mapNotNull null
 
-        var dpsSum = 0.0
-        var benchSum = 0.0
-        comparisons.forEach {
-            dpsSum += it.dps
-            benchSum += it.bench
-        }
+            var dpsSum = 0.0
+            var benchSum = 0.0
+            comparisons.forEach {
+                dpsSum += it.dps
+                benchSum += it.bench
+            }
 
-        WingmanComparison(
-            player.name,
-            DpsComparison(
-                null,
-                false,
-                null,
-                null,
-                null,
-                dpsSum / benchSum,
-                dpsSum / bosses.size,
-                benchSum / bosses.size,
-            ),
-            comparisons.first(),
-            comparisons.last(),
-        )
-    }.sortedByDescending { it.average.dps }
+            WingmanComparison(
+                player.name,
+                DpsComparison(
+                    null,
+                    false,
+                    null,
+                    null,
+                    null,
+                    dpsSum / benchSum,
+                    dpsSum / bosses.filter { it.success }.size,
+                    benchSum / bosses.filter { it.success }.size,
+                    comparisons.mapNotNull { it.boonEmote }.groupingBy { it }.eachCount().maxByOrNull { it.value }?.key,
+                ),
+                comparisons.first(),
+                comparisons.last(),
+            )
+        }.sortedByDescending { it.average.dps }
 
-    private fun compareToBench(bosses: List<Pull>, player: PlayerAnalysis): List<DpsComparison> = bosses.filter {
-        it.success && it.triggerId != 24485L && !bossData.ignore(it.eiEncounterId) && !it.embo
-    }.mapNotNull {
-        val triggerId = if (it.cm) -it.triggerId else it.triggerId
+    private fun compareToBench(bosses: List<Pull>, player: PlayerAnalysis, supports: Boolean): List<DpsComparison> = bosses.filter {
+        it.success && it.triggerId != 24485L && !isacData.ignore(it.eiEncounterId) && !it.embo
+    }.mapNotNull { boss ->
+        val pull = player.pulls[boss]
+        if (pull?.maybeHealer == true || (pull?.isSupport == null) == supports) return@mapNotNull null
+
+        val triggerId = if (boss.cm) -boss.triggerId else boss.triggerId
         val dpsBench = this.wingmanService.bossBench(triggerId) ?: return@mapNotNull null
-        val profession = player.pulls[it]?.profession ?: return@mapNotNull null
-        val profBench = (if (profession.isCondi) dpsBench.getCondiBench(profession.name) else dpsBench.getPowerBench(profession.name)) ?: return@mapNotNull null
+        val profession = pull?.profession ?: return@mapNotNull null
+        val profBench = professionBench(profession, dpsBench, supports) ?: return@mapNotNull null
+
+        val playerDps = if (pull.isSupport == null) {
+            null
+        } else {
+            val isacBoon = this.isacData.boonData[pull.isSupport]
+            boss.boonUptimes.values.mapNotNull { it[isacBoon] }.averageOrNull()?.let {
+                pull.dps * it / 100
+            }
+        } ?: pull.dps.toDouble()
 
         DpsComparison(
-            it.eiEncounterId,
-            it.cm,
+            boss.eiEncounterId,
+            boss.cm,
             profession.name,
             profession.isCondi,
-            it.link,
-            player.pulls[it]!!.dps.toDouble() / profBench,
-            player.pulls[it]!!.dps.toDouble(),
+            boss.link,
+            playerDps / profBench,
+            playerDps,
             profBench.toDouble(),
+            pull.isSupport?.let { this.isacData.boonData[it]?.emote },
         )
     }.sortedBy { it.percent }
+
+    private fun professionBench(profession: Profession, dpsBench: BossBench, supports: Boolean) = if (supports) {
+        dpsBench.getSupportBench(profession.name)
+    } else if (profession.isCondi) {
+        dpsBench.getCondiBench(profession.name)
+    } else {
+        dpsBench.getPowerBench(profession.name)
+    }
 }
 
-data class WingmanComparison(
-    val player: String,
-    val average: DpsComparison,
-    val lowest: DpsComparison,
-    val highest: DpsComparison,
-)
+data class WingmanComparison(val player: String, val average: DpsComparison, val lowest: DpsComparison, val highest: DpsComparison)
 
 data class DpsComparison(
     val eiEncounterId: Long?,
@@ -83,4 +104,5 @@ data class DpsComparison(
     val percent: Double,
     val dps: Double,
     val bench: Double,
+    val boonEmote: String?,
 )

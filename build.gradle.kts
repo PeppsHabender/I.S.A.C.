@@ -54,7 +54,8 @@ spotless {
     kotlin {
         ktlint().editorConfigOverride(mapOf(
             "ktlint_function_signature_body_expression_wrapping" to "default",
-            "ktlint_code_style" to "intellij_idea"
+            "ktlint_code_style" to "intellij_idea",
+            "max_line_length" to 140
         ))
     }
 }

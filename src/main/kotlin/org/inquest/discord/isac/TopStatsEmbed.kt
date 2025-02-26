@@ -29,11 +29,7 @@ object TopStatsEmbed {
         color,
     )
 
-    private fun createTopStats(
-        event: ChatInputInteractionEvent,
-        analysis: RunAnalysis,
-        idx: Int = 0,
-    ) = StringBuilder()
+    private fun createTopStats(event: ChatInputInteractionEvent, analysis: RunAnalysis, idx: Int = 0) = StringBuilder()
         .apply {
             val isTop = idx == 0
 

@@ -11,6 +11,8 @@ data class BossBench(
     val bossID: String? = null,
     @JsonProperty("professions_top")
     val professionsTop: Map<String, Int>? = emptyMap(),
+    @JsonProperty("professions_topSupport")
+    val professionsTopSupp: Map<String, Int>? = emptyMap(),
     val conditionDPS: DpsBenches?,
     val powerDPS: DpsBenches?,
     @JsonProperty("duration_top")
@@ -25,11 +27,11 @@ data class BossBench(
 
     fun getBench(profession: String): Int? = this.professionsTop?.get(profession.uppercased(0))
 
+    fun getSupportBench(profession: String): Int? = this.professionsTopSupp?.get(profession.uppercased(0))
+
     fun getCondiBench(profession: String) = this.conditionDPS?.professionsTop?.get(profession.uppercased(0))
 
     fun getPowerBench(profession: String) = this.powerDPS?.professionsTop?.get(profession.uppercased(0))
 }
 
-data class DpsBenches(
-    @JsonProperty("professions_top") val professionsTop: Map<String, Int>? = emptyMap(),
-)
+data class DpsBenches(@JsonProperty("professions_top") val professionsTop: Map<String, Int>? = emptyMap())
