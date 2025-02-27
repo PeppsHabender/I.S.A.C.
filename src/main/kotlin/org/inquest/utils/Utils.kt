@@ -4,10 +4,13 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import io.smallrye.mutiny.Uni
 import org.inquest.entities.JsonLog
 import org.reactivestreams.FlowAdapters
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 fun <T> Uni<T>.toMono() = Mono.from(FlowAdapters.toPublisher(convert().toPublisher()))
@@ -52,3 +55,12 @@ fun <K, V> mapWithPutDefault(defaultValue: (key: K) -> V): ReadWriteProperty<Any
             this.map = value.toMutableMap()
         }
     }
+
+object LogExtension {
+    val loggers: Map<KClass<*>, Logger> by mapWithPutDefault {
+        LoggerFactory.getLogger(it.java)
+    }
+
+    inline val <reified T> T.LOG
+        get() = loggers.getValue(T::class)
+}

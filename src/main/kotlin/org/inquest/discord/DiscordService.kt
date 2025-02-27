@@ -4,9 +4,11 @@ import discord4j.core.DiscordClientBuilder
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.discordjson.json.ApplicationCommandData
 import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.gateway.intent.Intent
 import discord4j.gateway.intent.IntentSet
+import discord4j.rest.service.ApplicationService
 import io.quarkus.arc.All
 import io.quarkus.runtime.LaunchMode
 import io.quarkus.runtime.Startup
@@ -16,6 +18,7 @@ import jakarta.annotation.PostConstruct
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.eclipse.microprofile.config.inject.ConfigProperty
+import org.inquest.utils.LogExtension.LOG
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -75,62 +78,86 @@ class DiscordService {
 
     private fun GatewayDiscordClient.installSlashCommands() {
         if (settings.guildId() != -1L) {
-            deleteOldGuildCommands().then(Flux.fromIterable(commands).flatMap { registerGuildCommand(it) }.then()).subscribe()
+            updateCommands(
+                { getGuildApplicationCommands(settings.applicationId(), settings.guildId()) },
+                { id, req -> modifyGuildApplicationCommand(settings.applicationId(), settings.guildId(), id, req.addDevName()) },
+                { deleteGuildApplicationCommand(settings.applicationId(), settings.guildId(), it) },
+                { createGuildApplicationCommand(settings.applicationId(), settings.guildId(), it.addDevName()) },
+            ).subscribe()
         }
 
         if (!LaunchMode.current().isDevOrTest) {
-            deleteOldGlobalCommands().then(Flux.fromIterable(commands).map { registerGlobalCommand(it) }.then()).subscribe()
+            updateCommands(
+                { getGlobalApplicationCommands(settings.applicationId()) },
+                { id, req -> modifyGlobalApplicationCommand(settings.applicationId(), id, req) },
+                { deleteGlobalApplicationCommand(settings.applicationId(), it) },
+                { createGlobalApplicationCommand(settings.applicationId(), it) },
+            ).subscribe()
         }
     }
 
-    private fun GatewayDiscordClient.deleteOldGuildCommands(): Mono<Void> = commands.map { it.devName() }.toSet().let { cmds ->
-        this.restClient
-            .applicationService
-            .getGuildApplicationCommands(settings.applicationId(), settings.guildId())
-            .filter { it.name() !in cmds }
-            .map { it.id() }
-            .flatMap {
-                println(it)
-                this.restClient
-                    .applicationService
-                    .deleteGuildApplicationCommand(settings.applicationId(), settings.guildId(), it.asLong())
-            }.then()
-    }
-
-    private fun GatewayDiscordClient.registerGuildCommand(cmd: CommandListener): Mono<Void> = this.restClient
+    private fun GatewayDiscordClient.updateCommands(
+        cmdGetter: ApplicationService.() -> Flux<ApplicationCommandData>,
+        cmdModifier: ApplicationService.(Long, ApplicationCommandRequest) -> Mono<ApplicationCommandData>,
+        cmdDeleter: ApplicationService.(Long) -> Mono<Void>,
+        cmdCreator: ApplicationService.(ApplicationCommandRequest) -> Mono<ApplicationCommandData>,
+    ): Mono<Void> = this.restClient
         .applicationService
-        .createGuildApplicationCommand(
-            settings.applicationId(),
-            settings.guildId(),
-            ApplicationCommandRequest.builder()
-                .from(cmd.build(this))
-                .name(cmd.devName())
-                .build(),
-        ).then()
+        .cmdGetter()
+        .groupBy { discCmd ->
+            commands.any { discCmd.name() == it.devName() }
+        }
+        .flatMap { group ->
+            if (group.key()) {
+                group.doFirst {
+                    LOG.info("Updating previous slash commands...")
+                }.flatMap { discCmd ->
+                    this.restClient.applicationService.cmdModifier(
+                        discCmd.id().asLong(),
+                        commands.first { cmd ->
+                            discCmd.name() == cmd.devName()
+                        }.build(this),
+                    ).doOnSuccess {
+                        LOG.info("Updated /{}.", it.name())
+                    }
+                }.doOnComplete {
+                    LOG.info("Successfully updated slash commands.")
+                }
+            } else {
+                group.doFirst {
+                    LOG.info("Removing unused slash commands...")
+                }.flatMap { discCmd ->
+                    this.restClient.applicationService.cmdDeleter(discCmd.id().asLong()).doOnSuccess {
+                        LOG.info("Deleted /{}.", discCmd.name())
+                    }
+                }.doOnComplete { LOG.info("Removed unused slash commands.") }.then(Mono.empty())
+            }
+        }.collectList().flatMap { discCmds ->
+            commands.filterNot { cmd ->
+                cmd.devName() in discCmds.map { it.name() }
+            }.let { cmds ->
+                if (cmds.isEmpty()) {
+                    return@let Mono.empty()
+                }
 
-    private fun GatewayDiscordClient.deleteOldGlobalCommands(): Mono<Void> = commands.map { it.name }.toSet().let { cmds ->
-        this.restClient
-            .applicationService
-            .getGlobalApplicationCommands(settings.applicationId())
-            .filter { it.name() !in cmds }
-            .map { it.id() }
-            .flatMap {
-                this.restClient
-                    .applicationService
-                    .deleteGlobalApplicationCommand(settings.applicationId(), it.asLong())
-            }.then()
-    }
-
-    private fun GatewayDiscordClient.registerGlobalCommand(cmd: CommandListener): Mono<Void> = this.restClient
-        .applicationService
-        .createGlobalApplicationCommand(settings.applicationId(), cmd.build(this))
-        .then()
+                Flux.fromIterable(cmds).doOnSubscribe {
+                    LOG.info("Creating new slash commands...")
+                }.flatMap { cmd ->
+                    this.restClient.applicationService.cmdCreator(cmd.build(this)).doOnSuccess { LOG.info("Created /{}.", it.name()) }
+                }.collectList().doOnSuccess {
+                    LOG.info("Successfully created new slash commands.")
+                }
+            }
+        }.then()
 
     private fun GatewayDiscordClient.installCommandHandlers() {
         on(ChatInputInteractionEvent::class.java) { e ->
             commands.firstOrNull { it.devName() == e.commandName }?.handle(e) ?: Mono.empty()
         }.subscribe()
     }
+
+    private fun ApplicationCommandRequest.addDevName() = ApplicationCommandRequest.builder()
+        .from(this).name(this.name().devName()).build()
 
     private fun CommandListener.devName() = name.devName()
 
