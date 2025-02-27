@@ -39,6 +39,7 @@ fun ThreadChannel.createMessageOrShowError(
 ): MessageCreateMono = try {
     createMessage(*message())
 } catch (ex: Throwable) {
+    ex.printStackTrace()
     createMessage(error(ex)).withFiles(MessageCreateFields.File.of("stacktrace.log", ex.stackTraceToString().byteInputStream()))
 }
 
@@ -127,6 +128,9 @@ object CustomEmojis {
     const val WIPES = " <:wipes:1340797369242878028> "
     const val CONDI = " <:condi:1342553033112027239> "
     const val POWER = " <:power:1342553024836665345> "
+    const val MIGHT = " <:might:1343681843844874322> "
+    const val ARROW_UP = " <:arrow_up:1344763437510692987> "
+    const val ARROW_DOWN = " <:arrow_down:1344763483266486452> "
 
     private val PROFESSIONS = mapOf(
         "guardian" to "<:guardian:1342553720310988871>",
@@ -181,4 +185,5 @@ object CustomColors {
     val SILVER_COLOR = Color.of(130, 138, 146)
     val GREEN_COLOR = Color.of(0, 148, 0)
     val RED_COLOR = Color.of(129, 0, 0)
+    val ORANGE_COLOR = Color.of(222, 136, 31)
 }

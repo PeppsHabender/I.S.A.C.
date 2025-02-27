@@ -2,6 +2,7 @@ package org.inquest
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import org.inquest.entities.BoonSupport
 import org.inquest.entities.IsacBoon
 import org.inquest.entities.JsonActorParent
 import org.inquest.entities.JsonLog
@@ -95,7 +96,9 @@ class AnalysisService {
             this.isacData.boonData.mapKeys { it.value }.mapValues { mutableListOf() }
         }
 
-        log.players.filter { it.account != null && it.friendlyNPC == false && it.isFake == false }.map {
+        log.players.filter {
+            it.account != null && it.friendlyNPC == false && it.isFake == false && !it.isProbHk(log)
+        }.map {
             it to it.fetchDps(log.eiEncounterID)
         }.sortedBy { it.second.first }.forEachIndexed { i, (player, dps) ->
             val group = player.group ?: -1
@@ -130,24 +133,32 @@ class AnalysisService {
         pull.boonUptimes = boonUptimes.mapValues { group -> group.value.mapValues { it.value.average() } }
     }
 
+    private fun JsonActorParent.JsonPlayer.isProbHk(log: JsonLog) = if (log.eiEncounterID != 132100L) {
+        false
+    } else {
+        (log.players.groupBy { it.group }[this.group]?.size ?: 5) < 2
+    }
+
     private fun JsonActorParent.JsonPlayer.boonUptimes(): Map<IsacBoon, Double> = this.buffUptimes.filter {
         it.id in isacData.boonData && it.buffData[0].uptime != null
     }.associate {
         isacData.boonData[it.id]!! to it.buffData[0].uptime!!
     }
 
-    private fun JsonActorParent.JsonPlayer.primaryBoon(encounterId: Long?): Long? = this.groupBuffs.filter {
-        it.id in IsacBoon.PRIM_BOONS
+    private fun JsonActorParent.JsonPlayer.primaryBoon(encounterId: Long?): BoonSupport? = this.groupBuffs.filter {
+        isacData.boonData[it.id]?.isPrimary ?: false
     }.mapNotNull { boon ->
-        boon.id?.let { id -> boon.buffData.firstOrNull()?.generation?.let { id to it } }
+        boon.id?.let { id -> boon.buffData.firstOrNull()?.generation?.let { BoonSupport(id, it) } }
     }.filter { (_, gen) ->
         if (encounterId == 132358L) {
             // I hate dhuum kites
             gen > 3
+        } else if (isacData.ignoreForBoons(encounterId)) {
+            gen > 25
         } else {
             gen > 50
         }
-    }.maxByOrNull { it.second }?.first
+    }.maxByOrNull { it.generation }
 
     private fun JsonLog.isEmbo(): Boolean = (
         this.presentInstanceBuffs.firstOrNull {

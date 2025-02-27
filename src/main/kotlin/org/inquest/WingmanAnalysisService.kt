@@ -55,19 +55,23 @@ class WingmanAnalysisService {
         it.success && it.triggerId != 24485L && !isacData.ignore(it.eiEncounterId) && !it.embo
     }.mapNotNull { boss ->
         val pull = player.pulls[boss]
-        if (pull?.maybeHealer == true || (pull?.isSupport == null) == supports) return@mapNotNull null
+        if (pull?.maybeHealer == true || (pull?.boonSupport == null) == supports) return@mapNotNull null
 
         val triggerId = if (boss.cm) -boss.triggerId else boss.triggerId
         val dpsBench = this.wingmanService.bossBench(triggerId) ?: return@mapNotNull null
         val profession = pull?.profession ?: return@mapNotNull null
         val profBench = professionBench(profession, dpsBench, supports) ?: return@mapNotNull null
 
-        val playerDps = if (pull.isSupport == null) {
+        val playerDps = if (pull.boonSupport == null) {
             null
         } else {
-            val isacBoon = this.isacData.boonData[pull.isSupport]
+            val isacBoon = this.isacData.boonData[pull.boonSupport.boon]
             boss.boonUptimes.values.mapNotNull { it[isacBoon] }.averageOrNull()?.let {
-                pull.dps * it / 100
+                if (pull.boonSupport.generation < 50) {
+                    pull.dps * pull.boonSupport.generation / 100
+                } else {
+                    pull.dps * it / 100
+                }
             }
         } ?: pull.dps.toDouble()
 
@@ -80,7 +84,7 @@ class WingmanAnalysisService {
             playerDps / profBench,
             playerDps,
             profBench.toDouble(),
-            pull.isSupport?.let { this.isacData.boonData[it]?.emote },
+            pull.boonSupport?.let { this.isacData.boonData[it.boon]?.emote },
         )
     }.sortedBy { it.percent }
 

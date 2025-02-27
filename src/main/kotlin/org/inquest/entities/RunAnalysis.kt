@@ -44,13 +44,17 @@ data class PlayerPull(
     val boonStrips: Int = 0,
     val damageTaken: Int = 0,
     val downstates: Int = 0,
-    val isSupport: Long? = null,
+    val boonSupport: BoonSupport? = null,
     val maybeHealer: Boolean = false,
     val boonUptimes: Map<IsacBoon, Double> = emptyMap(),
 )
 
+data class BoonSupport(val boon: Long, val generation: Double)
+
 class PlayerAnalysis(val name: String, val pulls: MutableMap<Pull, PlayerPull> = mutableMapOf()) {
-    fun mostPlayed(): String = this.pulls.values.map { it.profession }.groupingBy { it.name }.eachCount().maxBy { it.value }.key
+    fun mostPlayed(): String = this.pulls.values.map {
+        it.profession
+    }.filterNot { it.name == "*" }.groupingBy { it.name }.eachCount().maxBy { it.value }.key
 
     fun avgDps() = this.pulls.values.map { it.dps }.average()
 

@@ -8,6 +8,12 @@ import java.util.Locale
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 
+fun String.padRight(len: Int, with: Char = ' ') = if (this.length < len) {
+    this + with.toString().repeat(len - this.length)
+} else {
+    this
+}
+
 /**
  * @return The duration in minutes, rounded to int
  */

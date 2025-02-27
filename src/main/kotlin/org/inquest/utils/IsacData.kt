@@ -45,6 +45,11 @@ class IsacData {
     fun ignore(id: Long?) = !(this.bossData[id]?.validForTopStat ?: true)
 
     /**
+     * @return true when the boss associated with [id] should be ignored for boon analysis
+     */
+    fun ignoreForBoons(id: Long?) = !(this.bossData[id]?.validForBoons ?: true)
+
+    /**
      * @return An emote for the boss with [id] or null if none was found
      */
     fun emoteFor(id: Long?, cm: Boolean) = this.bossData[id]?.emote?.let { if (cm) it.challenge else it.normal }

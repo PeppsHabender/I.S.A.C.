@@ -26,16 +26,19 @@
   },
   "740": {
     "id": 740,
+    "isStacks": true,
     "emote": "<:might:1343681843844874322>",
     "name": "Might"
   },
   "1187": {
     "id": 1187,
+    "isPrimary": true,
     "emote": "<:quick:1343681825926807552>",
     "name": "Quickness"
   },
   "30328": {
     "id": 30328,
+    "isPrimary": true,
     "emote": "<:alac:1343681863113510972>",
     "name": "Alacrity"
   }

@@ -17,6 +17,7 @@ import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createMessageOrShowError
 import org.inquest.discord.dynamic
+import org.inquest.discord.isac.ErrorEmbeds.analyzeBoonsException
 import org.inquest.discord.isac.ErrorEmbeds.analyzeWmException
 import org.inquest.discord.isac.ErrorEmbeds.handleAnalyzeException
 import org.inquest.discord.isac.ErrorEmbeds.handleFetchingException
@@ -77,6 +78,9 @@ class IsacCommand : CommandListener {
     @Inject
     private lateinit var wingmanEmbed: WingmanEmbed
 
+    @Inject
+    private lateinit var boonStatsEmbed: BoonStatsEmbed
+
     /**
      * The discord client which will be initialized on build
      */
@@ -93,6 +97,7 @@ class IsacCommand : CommandListener {
             .withStringOption(NAME_OPTION, "Name of the run. Default: 'Run Analysis'", required = false)
             .withBooleanOption(HEAL_OPTION, "Include heal/barrier stats. Default: False", required = false)
             .withBooleanOption(WM_OPTION, "Include a wingman bench dps comparison. Default: True", required = false)
+            .withBooleanOption(BOONS_OPTION, "Analyze sub-group specific boon uptimes. Default: False", required = false)
             .build()
     }
 
@@ -143,6 +148,14 @@ class IsacCommand : CommandListener {
             } else {
                 Uni.createFrom().voidItem()
             }
+        }.call { (analysis, thread) ->
+            if (event.optionAsBoolean(BOONS_OPTION, false)) {
+                thread.createMessageOrShowError({ boonStatsEmbed.createOverviewEmbed(analysis, event).dynamic() }) {
+                    analyzeBoonsException()
+                }.toUni()
+            } else {
+                Uni.createFrom().voidItem()
+            }
         }.toMono().then()
 
     private fun ChatInputInteractionEvent.extractLogs(): List<String> = DPS_REPORT_RGX.findAll(optionAsString("logs")!!).map {
@@ -181,5 +194,6 @@ class IsacCommand : CommandListener {
         private const val NAME_OPTION = "name"
         private const val HEAL_OPTION = "with_heal"
         private const val WM_OPTION = "compare_wingman"
+        private const val BOONS_OPTION = "analyze_boons"
     }
 }

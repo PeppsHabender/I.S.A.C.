@@ -17,6 +17,7 @@ object ErrorEmbeds {
     private const val ANALYZE_EXC_MSG = "**Oups.. Looks like your dps might have been too low, I.S.A.C. failed to analyze your logs!**" +
         "\nMaybe this could help..."
     private const val ANALYZE_WM_EXC_MSG = "**Oups.. Looks like wingman isnt too nice to us!**\nMaybe this could help..."
+    private const val ANALYZE_BOONS_EXC_MSG = "**Failed to analyze your boons...**"
 
     /**
      * Embed to be shown when we didn't find any logs.
@@ -44,4 +45,9 @@ object ErrorEmbeds {
      * Embed to be shown when there was an error when comparing to wingman.
      */
     fun analyzeWmException() = createEmbed(ANALYZE_WM_EXC_MSG, color = CustomColors.RED_COLOR)
+
+    /**
+     * Embed to be shown when there was an error when comparing to wingman.
+     */
+    fun analyzeBoonsException() = createEmbed(ANALYZE_BOONS_EXC_MSG, color = CustomColors.RED_COLOR)
 }

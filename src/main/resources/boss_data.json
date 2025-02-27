@@ -68,6 +68,7 @@
     "boss": "Bandit Trio",
     "eliteInsightsId": 131586,
     "validForTopStat": false,
+    "validForBoons": false,
     "emote": {
       "normal": "<:trio:1340792358928781363>"
     },
@@ -98,6 +99,7 @@
     "boss": "Escort",
     "eliteInsightsId": 131841,
     "validForTopStat": false,
+    "validForBoons": false,
     "emote": {
       "normal": "<:escort:1340792500272762891>"
     },
@@ -130,6 +132,7 @@
     "boss": "Twisted Castle",
     "eliteInsightsId": 131843,
     "validForTopStat": false,
+    "validForBoons": false,
     "shortname": "TC",
     "targets": [
       0
@@ -142,6 +145,7 @@
     "boss": "Xera",
     "eliteInsightsId": 131844,
     "validForTopStat": true,
+    "validForBoons": false,
     "emote": {
       "normal": "<:xera:1340792612340367482>"
     },
@@ -247,6 +251,7 @@
     "boss": "River of Souls",
     "eliteInsightsId": 132354,
     "validForTopStat": false,
+    "validForBoons": false,
     "shortname": "River",
     "targets": [
       0
@@ -259,6 +264,7 @@
     "boss": "Broken King",
     "eliteInsightsId": 132355,
     "validForTopStat": false,
+    "validForBoons": false,
     "emote": {
       "normal": "<:ice:1340793246820864011>"
     },
@@ -274,6 +280,7 @@
     "boss": "Soul Eater",
     "eliteInsightsId": 132356,
     "validForTopStat": false,
+    "validForBoons": false,
     "emote": {
       "normal": "<:eater:1340793297924263986>"
     },
@@ -289,6 +296,7 @@
     "boss": "Eye of Judgement/Eye of Fate",
     "eliteInsightsId": 132357,
     "validForTopStat": false,
+    "validForBoons": false,
     "emote": {
       "normal": "<:eye:1340793347815641178>"
     },
@@ -304,6 +312,7 @@
     "boss": "Dhuum",
     "eliteInsightsId": 132358,
     "validForTopStat": true,
+    "validForBoons": false,
     "emote": {
       "normal": "<:dhu:1340792867316305950>",
       "challenge": "<:dhucm:1340793857901592717>"
@@ -353,6 +362,7 @@
     "boss": "Qadim",
     "eliteInsightsId": 132611,
     "validForTopStat": true,
+    "validForBoons": false,
     "emote": {
       "normal": "<:qad:1340793026519502898>",
       "challenge": "<:qadcm:1340793681333981324>"
@@ -403,6 +413,7 @@
     "boss": "Qadim the Peerless",
     "eliteInsightsId": 132867,
     "validForTopStat": true,
+    "validForBoons": false,
     "emote": {
       "normal": "<:qtp:1340793198452277351>",
       "challenge": "<:qtpcm:1340793732231860224>"
@@ -556,6 +567,7 @@
     "boss": "Freezie",
     "eliteInsightsId": 262401,
     "validForTopStat": false,
+    "validForBoons": false,
     "targets": [
       0
     ],
@@ -644,6 +656,7 @@
     "boss": "Varinia Stormsounder",
     "eliteInsightsId": 262662,
     "validForTopStat": false,
+    "validForBoons": false,
     "targets": [
       0
     ],
@@ -780,6 +793,7 @@
     "boss": "Spirit Race",
     "eliteInsightsId": 131332,
     "validForTopStat": false,
+    "validForBoons": false,
     "shortname": "Spirit Race",
     "targets": [
       0
