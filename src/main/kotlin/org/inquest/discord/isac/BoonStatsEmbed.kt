@@ -7,10 +7,16 @@ import jakarta.inject.Inject
 import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
-import org.inquest.entities.IsacBoon
-import org.inquest.entities.RunAnalysis
-import org.inquest.utils.IsacData
+import org.inquest.entities.isac.IsacBoon
+import org.inquest.entities.isac.RunAnalysis
+import org.inquest.services.IsacDataService
+import org.inquest.utils.appendBold
+import org.inquest.utils.appendItalic
+import org.inquest.utils.appendMono
+import org.inquest.utils.format
 import org.inquest.utils.mapWithPutDefault
+import org.inquest.utils.padRight
+import org.inquest.utils.space
 
 @ApplicationScoped
 class BoonStatsEmbed {
@@ -20,7 +26,7 @@ class BoonStatsEmbed {
     }
 
     @Inject
-    private lateinit var isacData: IsacData
+    private lateinit var isacDataService: IsacDataService
 
     fun createOverviewEmbed(analysis: RunAnalysis, event: ChatInputInteractionEvent): EmbedCreateSpec = createEmbed(
         StringBuilder().appendItalic(DESCR_STARTER).createBoonAnalysis(analysis).toString(),
@@ -31,8 +37,8 @@ class BoonStatsEmbed {
     fun StringBuilder.createBoonAnalysis(analysis: RunAnalysis): StringBuilder {
         val boonAnalyses: Map<Int, StringBuilder> by mapWithPutDefault { StringBuilder().appendBold("Subgroup $it").appendLine() }
 
-        isacData.boonData.values.sorted().forEach { boon ->
-            analysis.pulls.filter { it.success && !isacData.ignoreForBoons(it.eiEncounterId) }.flatMap { pull ->
+        isacDataService.boonData.values.sorted().forEach { boon ->
+            analysis.pulls.filter { it.success && !isacDataService.ignoreForBoons(it.eiEncounterId) }.flatMap { pull ->
                 pull.boonUptimes.mapValues { uptimes ->
                     uptimes.value.filter { (k, _) -> k == boon }.values.first() to pull.link
                 }.entries

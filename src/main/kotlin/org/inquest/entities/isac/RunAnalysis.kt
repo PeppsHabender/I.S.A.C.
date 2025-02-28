@@ -1,4 +1,4 @@
-package org.inquest.entities
+package org.inquest.entities.isac
 
 import java.time.OffsetDateTime
 import kotlin.time.Duration

@@ -4,16 +4,22 @@ import discord4j.core.spec.EmbedCreateFields
 import discord4j.core.spec.EmbedCreateSpec
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import org.inquest.DpsComparison
-import org.inquest.WingmanAnalysisService
-import org.inquest.WingmanComparison
-import org.inquest.clients.WingmanService
 import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
-import org.inquest.entities.PlayerAnalysis
-import org.inquest.entities.Pull
-import org.inquest.utils.IsacData
+import org.inquest.discord.toDiscordTimestamp
+import org.inquest.entities.isac.PlayerAnalysis
+import org.inquest.entities.isac.Pull
+import org.inquest.services.DpsComparison
+import org.inquest.services.IsacDataService
+import org.inquest.services.WingmanAnalysisService
+import org.inquest.services.WingmanComparison
+import org.inquest.services.WingmanService
+import org.inquest.utils.appendBold
+import org.inquest.utils.appendItalic
+import org.inquest.utils.appendMono
+import org.inquest.utils.format
+import org.inquest.utils.space
 
 /**
  * Uses the [wingmanService] and [WingmanAnalysisService] to create an embed which compares the dps performance
@@ -35,7 +41,7 @@ class WingmanEmbed {
     private lateinit var analysisService: WingmanAnalysisService
 
     @Inject
-    private lateinit var isacData: IsacData
+    private lateinit var isacDataService: IsacDataService
 
     fun createWingmanEmbed(bosses: List<Pull>, players: List<PlayerAnalysis>, supports: Boolean = false): EmbedCreateSpec = createEmbed(
         createDescription(
@@ -112,7 +118,7 @@ class WingmanEmbed {
         comparison.log?.let { append("]($it)") }
         comparison.eiEncounterId?.let {
             space()
-            isacData.emoteFor(it, comparison.cm)?.let(::append)
+            isacDataService.emoteFor(it, comparison.cm)?.let(::append)
         }
     }
 }

@@ -1,4 +1,4 @@
-package org.inquest.entities
+package org.inquest.entities.logs
 
 typealias ListList<T> = List<List<T>>
 

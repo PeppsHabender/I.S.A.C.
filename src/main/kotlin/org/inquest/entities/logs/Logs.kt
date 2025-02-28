@@ -1,4 +1,4 @@
-package org.inquest.entities
+package org.inquest.entities.logs
 
 data class DpsReport(
     var id: String,

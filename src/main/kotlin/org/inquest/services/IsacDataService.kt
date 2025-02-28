@@ -1,18 +1,18 @@
-package org.inquest.utils
+package org.inquest.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import jakarta.annotation.PostConstruct
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import org.inquest.entities.IsacBoon
-import org.inquest.entities.IsacBoss
+import org.inquest.entities.isac.IsacBoon
+import org.inquest.entities.isac.IsacBoss
 
 /**
  * Contains isac specific information on bosses.
  */
 @ApplicationScoped
-class IsacData {
+class IsacDataService {
     /**
      * Used to read the static boss information
      */

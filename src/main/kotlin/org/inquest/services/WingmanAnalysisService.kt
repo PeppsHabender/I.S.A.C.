@@ -1,13 +1,11 @@
-package org.inquest
+package org.inquest.services
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import org.inquest.clients.WingmanService
-import org.inquest.entities.BossBench
-import org.inquest.entities.PlayerAnalysis
-import org.inquest.entities.Profession
-import org.inquest.entities.Pull
-import org.inquest.utils.IsacData
+import org.inquest.entities.isac.PlayerAnalysis
+import org.inquest.entities.isac.Profession
+import org.inquest.entities.isac.Pull
+import org.inquest.entities.wingman.BossBench
 import org.inquest.utils.averageOrNull
 
 /**
@@ -19,7 +17,7 @@ class WingmanAnalysisService {
     private lateinit var wingmanService: WingmanService
 
     @Inject
-    private lateinit var isacData: IsacData
+    private lateinit var isacDataService: IsacDataService
 
     fun compareToWingman(bosses: List<Pull>, players: List<PlayerAnalysis>, supports: Boolean): List<WingmanComparison> =
         players.mapNotNull { player ->
@@ -52,7 +50,7 @@ class WingmanAnalysisService {
         }.sortedByDescending { it.average.dps }
 
     private fun compareToBench(bosses: List<Pull>, player: PlayerAnalysis, supports: Boolean): List<DpsComparison> = bosses.filter {
-        it.success && it.triggerId != 24485L && !isacData.ignore(it.eiEncounterId) && !it.embo
+        it.success && it.triggerId != 24485L && !isacDataService.ignore(it.eiEncounterId) && !it.embo
     }.mapNotNull { boss ->
         val pull = player.pulls[boss]
         if (pull?.maybeHealer == true || (pull?.boonSupport == null) == supports) return@mapNotNull null
@@ -65,7 +63,7 @@ class WingmanAnalysisService {
         val playerDps = if (pull.boonSupport == null) {
             null
         } else {
-            val isacBoon = this.isacData.boonData[pull.boonSupport.boon]
+            val isacBoon = this.isacDataService.boonData[pull.boonSupport.boon]
             boss.boonUptimes.values.mapNotNull { it[isacBoon] }.averageOrNull()?.let {
                 if (pull.boonSupport.generation < 50) {
                     pull.dps * pull.boonSupport.generation / 100
@@ -84,7 +82,7 @@ class WingmanAnalysisService {
             playerDps / profBench,
             playerDps,
             profBench.toDouble(),
-            pull.boonSupport?.let { this.isacData.boonData[it.boon]?.emote },
+            pull.boonSupport?.let { this.isacDataService.boonData[it.boon]?.emote },
         )
     }.sortedBy { it.percent }
 

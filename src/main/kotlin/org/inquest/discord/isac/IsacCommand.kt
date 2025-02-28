@@ -10,7 +10,6 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.eclipse.microprofile.context.ManagedExecutor
 import org.eclipse.microprofile.rest.client.inject.RestClient
-import org.inquest.AnalysisService
 import org.inquest.clients.DpsReportClient
 import org.inquest.discord.CommandListener
 import org.inquest.discord.CustomColors
@@ -22,19 +21,21 @@ import org.inquest.discord.isac.ErrorEmbeds.analyzeWmException
 import org.inquest.discord.isac.ErrorEmbeds.handleAnalyzeException
 import org.inquest.discord.isac.ErrorEmbeds.handleFetchingException
 import org.inquest.discord.isac.ErrorEmbeds.noLogsException
+import org.inquest.discord.isac.IsacCommand.Companion.DPS_REPORT_RGX
 import org.inquest.discord.isac.LogListingEmbeds.createSuccessLogsEmbed
 import org.inquest.discord.isac.LogListingEmbeds.createWipeLogsEmbed
 import org.inquest.discord.isac.OverviewEmbed.createOverviewEmbed
 import org.inquest.discord.isac.TopStatsEmbed.createTopStatsEmbed
+import org.inquest.discord.optionAsBoolean
+import org.inquest.discord.optionAsString
+import org.inquest.discord.toMono
+import org.inquest.discord.toUni
 import org.inquest.discord.withBooleanOption
 import org.inquest.discord.withStringOption
-import org.inquest.entities.RunAnalysis
-import org.inquest.utils.IsacData
-import org.inquest.utils.optionAsBoolean
-import org.inquest.utils.optionAsString
+import org.inquest.entities.isac.RunAnalysis
+import org.inquest.services.AnalysisService
+import org.inquest.services.IsacDataService
 import org.inquest.utils.startTime
-import org.inquest.utils.toMono
-import org.inquest.utils.toUni
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -46,9 +47,21 @@ import reactor.core.scheduler.Schedulers
  * - logs: List of logs matching [DPS_REPORT_RGX]
  * - (name): Name of the analysis. Default: 'Run Analysis'
  * - (with_heal): Wether to include heal stats or not, heal stats only really make sense if at least both of the healers use the extension. Default: false
+ * - (compare_wingman): Wether to include wingman top (support) stats. Default: false
+ * - (analyze_boons): Wether to include detailed boon uptime analysis. Default: true
  */
 @ApplicationScoped
 class IsacCommand : CommandListener {
+    companion object {
+        private val DPS_REPORT_RGX =
+            Regex("https://(?:[ab]\\.)?dps.report/[\\w-]+(?=\\s*?https|$|\\s)")
+        private const val LOGS_OPTION = "logs"
+        private const val NAME_OPTION = "name"
+        private const val HEAL_OPTION = "with_heal"
+        private const val WM_OPTION = "compare_wingman"
+        private const val BOONS_OPTION = "analyze_boons"
+    }
+
     override val name: String = "analyze"
 
     /**
@@ -67,7 +80,7 @@ class IsacCommand : CommandListener {
      * Isac specific boss data
      */
     @Inject
-    private lateinit var isacData: IsacData
+    private lateinit var isacDataService: IsacDataService
 
     /**
      * Used to schedule the parallel downloading of logs
@@ -181,19 +194,9 @@ class IsacCommand : CommandListener {
             1,
             CustomColors.SILVER_COLOR,
         ).dynamic()
-        embeds += createSuccessLogsEmbed(this, isacData).dynamic()
-        if (this.pulls.any { !it.success }) embeds += createWipeLogsEmbed(this, isacData)
+        embeds += createSuccessLogsEmbed(this, isacDataService).dynamic()
+        if (this.pulls.any { !it.success }) embeds += createWipeLogsEmbed(this, isacDataService)
 
         return embeds
-    }
-
-    companion object {
-        private val DPS_REPORT_RGX =
-            Regex("https://(?:[ab]\\.)?dps.report/[\\w-]+(?=\\s*?https|$|\\s)")
-        private const val LOGS_OPTION = "logs"
-        private const val NAME_OPTION = "name"
-        private const val HEAL_OPTION = "with_heal"
-        private const val WM_OPTION = "compare_wingman"
-        private const val BOONS_OPTION = "analyze_boons"
     }
 }

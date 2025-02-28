@@ -12,31 +12,24 @@ import discord4j.rest.service.ApplicationService
 import io.quarkus.arc.All
 import io.quarkus.runtime.LaunchMode
 import io.quarkus.runtime.Startup
-import io.smallrye.config.ConfigMapping
-import io.smallrye.config.WithName
 import jakarta.annotation.PostConstruct
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.inquest.utils.LogExtension.LOG
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-@ConfigMapping(prefix = "discord")
-interface DiscordSettings {
-    @WithName("token")
-    fun token(): String
-
-    @WithName("application-id")
-    fun applicationId(): Long
-
-    @ConfigProperty(name = "guild-id", defaultValue = "-1")
-    fun guildId(): Long
-}
-
 @Startup
 @ApplicationScoped
 class DiscordService {
+    companion object {
+        private val INTENTS = IntentSet.of(
+            Intent.GUILD_MESSAGES,
+            Intent.GUILD_MEMBERS,
+            Intent.MESSAGE_CONTENT,
+        )
+    }
+
     @Inject
     private lateinit var settings: DiscordSettings
 
@@ -109,46 +102,40 @@ class DiscordService {
         }
         .flatMap { group ->
             if (group.key()) {
-                group.doFirst {
-                    LOG.info("Updating previous slash commands...")
-                }.flatMap { discCmd ->
-                    this.restClient.applicationService.cmdModifier(
-                        discCmd.id().asLong(),
-                        commands.first { cmd ->
-                            discCmd.name() == cmd.devName()
-                        }.build(this),
-                    ).doOnSuccess {
-                        LOG.info("Updated /{}.", it.name())
-                    }
-                }.doOnComplete {
-                    LOG.info("Successfully updated slash commands.")
-                }
+                group.updateDiscordCommands(this, cmdModifier)
             } else {
-                group.doFirst {
-                    LOG.info("Removing unused slash commands...")
-                }.flatMap { discCmd ->
-                    this.restClient.applicationService.cmdDeleter(discCmd.id().asLong()).doOnSuccess {
-                        LOG.info("Deleted /{}.", discCmd.name())
-                    }
-                }.doOnComplete { LOG.info("Removed unused slash commands.") }.then(Mono.empty())
+                group.deleteUnusedCommands(this, cmdDeleter).then(Mono.empty())
             }
-        }.collectList().flatMap { discCmds ->
-            commands.filterNot { cmd ->
-                cmd.devName() in discCmds.map { it.name() }
-            }.let { cmds ->
-                if (cmds.isEmpty()) {
-                    return@let Mono.empty()
-                }
+        }.collectList().createNewCommands(this, cmdCreator).then()
 
-                Flux.fromIterable(cmds).doOnSubscribe {
-                    LOG.info("Creating new slash commands...")
-                }.flatMap { cmd ->
-                    this.restClient.applicationService.cmdCreator(cmd.build(this)).doOnSuccess { LOG.info("Created /{}.", it.name()) }
-                }.collectList().doOnSuccess {
-                    LOG.info("Successfully created new slash commands.")
-                }
-            }
-        }.then()
+    private fun Flux<ApplicationCommandData>.updateDiscordCommands(
+        gatewayDiscordClient: GatewayDiscordClient,
+        cmdModifier: ApplicationService.(Long, ApplicationCommandRequest) -> Mono<ApplicationCommandData>,
+    ) = doFirst {
+        LOG.info("Updating previous slash commands...")
+    }.flatMap { discCmd ->
+        gatewayDiscordClient.restClient.applicationService.cmdModifier(
+            discCmd.id().asLong(),
+            commands.first { cmd ->
+                discCmd.name() == cmd.devName()
+            }.build(gatewayDiscordClient),
+        ).doOnSuccess {
+            LOG.info("Updated /{}.", it.name())
+        }
+    }.doOnComplete {
+        LOG.info("Successfully updated slash commands.")
+    }
+
+    private fun Flux<ApplicationCommandData>.deleteUnusedCommands(
+        gatewayDiscordClient: GatewayDiscordClient,
+        cmdDeleter: ApplicationService.(Long) -> Mono<Void>,
+    ) = doFirst {
+        LOG.info("Removing unused slash commands...")
+    }.flatMap { discCmd ->
+        gatewayDiscordClient.restClient.applicationService.cmdDeleter(discCmd.id().asLong()).doOnSuccess {
+            LOG.info("Deleted /{}.", discCmd.name())
+        }
+    }.doOnComplete { LOG.info("Removed unused slash commands.") }
 
     private fun GatewayDiscordClient.installCommandHandlers() {
         on(ChatInputInteractionEvent::class.java) { e ->
@@ -156,15 +143,35 @@ class DiscordService {
         }.subscribe()
     }
 
+    private fun Mono<List<ApplicationCommandData>>.createNewCommands(
+        gatewayDiscordClient: GatewayDiscordClient,
+        cmdCreator: ApplicationService.(ApplicationCommandRequest) -> Mono<ApplicationCommandData>,
+    ) = flatMap { discCmds ->
+        commands.filterNot { cmd ->
+            cmd.devName() in discCmds.map { it.name() }
+        }.let { cmds ->
+            if (cmds.isEmpty()) {
+                return@let Mono.empty()
+            }
+
+            Flux.fromIterable(cmds).doOnSubscribe {
+                LOG.info("Creating new slash commands...")
+            }.flatMap { cmd ->
+                gatewayDiscordClient
+                    .restClient
+                    .applicationService
+                    .cmdCreator(cmd.build(gatewayDiscordClient))
+                    .doOnSuccess { LOG.info("Created /{}.", it.name()) }
+            }.collectList().doOnSuccess {
+                LOG.info("Successfully created new slash commands.")
+            }
+        }
+    }
+
     private fun ApplicationCommandRequest.addDevName() = ApplicationCommandRequest.builder()
-        .from(this).name(this.name().devName()).build()
+        .from(this).name(name().devName()).build()
 
     private fun CommandListener.devName() = name.devName()
 
     private fun String.devName() = if (LaunchMode.current().isDevOrTest) "${this}_test" else this
-
-    companion object {
-        private val INTENTS =
-            IntentSet.of(Intent.GUILD_MESSAGES, Intent.GUILD_MEMBERS, Intent.MESSAGE_CONTENT)
-    }
 }

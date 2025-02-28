@@ -1,4 +1,4 @@
-package org.inquest.entities
+package org.inquest.entities.wingman
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty

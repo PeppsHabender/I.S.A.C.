@@ -4,9 +4,13 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.rest.util.Color
 import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
-import org.inquest.entities.PlayerAnalysis
-import org.inquest.entities.RunAnalysis
-import org.inquest.utils.optionAsBoolean
+import org.inquest.discord.optionAsBoolean
+import org.inquest.entities.isac.PlayerAnalysis
+import org.inquest.entities.isac.RunAnalysis
+import org.inquest.utils.appendBold
+import org.inquest.utils.appendMono
+import org.inquest.utils.format
+import org.inquest.utils.space
 import kotlin.math.roundToInt
 
 /**

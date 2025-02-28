@@ -1,17 +1,16 @@
-package org.inquest
+package org.inquest.services
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import org.inquest.entities.BoonSupport
-import org.inquest.entities.IsacBoon
-import org.inquest.entities.JsonActorParent
-import org.inquest.entities.JsonLog
-import org.inquest.entities.PlayerAnalysis
-import org.inquest.entities.PlayerPull
-import org.inquest.entities.Profession
-import org.inquest.entities.Pull
-import org.inquest.entities.RunAnalysis
-import org.inquest.utils.IsacData
+import org.inquest.entities.isac.BoonSupport
+import org.inquest.entities.isac.IsacBoon
+import org.inquest.entities.isac.PlayerAnalysis
+import org.inquest.entities.isac.PlayerPull
+import org.inquest.entities.isac.Profession
+import org.inquest.entities.isac.Pull
+import org.inquest.entities.isac.RunAnalysis
+import org.inquest.entities.logs.JsonActorParent
+import org.inquest.entities.logs.JsonLog
 import org.inquest.utils.endTime
 import org.inquest.utils.mapWithPutDefault
 import org.inquest.utils.startTime
@@ -23,7 +22,7 @@ import kotlin.time.toKotlinDuration
 @ApplicationScoped
 class AnalysisService {
     @Inject
-    private lateinit var isacData: IsacData
+    private lateinit var isacDataService: IsacDataService
 
     fun analyze(logs: List<Pair<String, JsonLog>>): RunAnalysis = logs
         .sortedBy { it.second.startTime() }
@@ -63,7 +62,7 @@ class AnalysisService {
                 if (!log.success) {
                     downtime += logDuration
                     continue
-                } else if (this.isacData.ignore(log.eiEncounterID)) {
+                } else if (this.isacDataService.ignore(log.eiEncounterID)) {
                     continue
                 }
 
@@ -93,7 +92,7 @@ class AnalysisService {
 
     private fun addPlayerStats(base: MutableMap<String, PlayerAnalysis>, log: JsonLog, pull: Pull) {
         val boonUptimes: Map<Int, Map<IsacBoon, MutableList<Double>>> by mapWithPutDefault {
-            this.isacData.boonData.mapKeys { it.value }.mapValues { mutableListOf() }
+            this.isacDataService.boonData.mapKeys { it.value }.mapValues { mutableListOf() }
         }
 
         log.players.filter {
@@ -140,20 +139,20 @@ class AnalysisService {
     }
 
     private fun JsonActorParent.JsonPlayer.boonUptimes(): Map<IsacBoon, Double> = this.buffUptimes.filter {
-        it.id in isacData.boonData && it.buffData[0].uptime != null
+        it.id in isacDataService.boonData && it.buffData[0].uptime != null
     }.associate {
-        isacData.boonData[it.id]!! to it.buffData[0].uptime!!
+        isacDataService.boonData[it.id]!! to it.buffData[0].uptime!!
     }
 
     private fun JsonActorParent.JsonPlayer.primaryBoon(encounterId: Long?): BoonSupport? = this.groupBuffs.filter {
-        isacData.boonData[it.id]?.isPrimary ?: false
+        isacDataService.boonData[it.id]?.isPrimary ?: false
     }.mapNotNull { boon ->
         boon.id?.let { id -> boon.buffData.firstOrNull()?.generation?.let { BoonSupport(id, it) } }
     }.filter { (_, gen) ->
         if (encounterId == 132358L) {
             // I hate dhuum kites
             gen > 3
-        } else if (isacData.ignoreForBoons(encounterId)) {
+        } else if (isacDataService.ignoreForBoons(encounterId)) {
             gen > 25
         } else {
             gen > 50
@@ -167,7 +166,7 @@ class AnalysisService {
         ) > 0
 
     private fun JsonActorParent.JsonPlayer.fetchDps(bossId: Long?): Pair<Int, Boolean> = this.dpsTargets
-        .slice(isacData.targets(bossId))
+        .slice(isacDataService.targets(bossId))
         .mapNotNull { dpsTargets ->
             dpsTargets[0].condiDps?.let { condi -> dpsTargets[0].powerDps?.let { condi to it } }
             // dpsTargets.slice(bossData.phases(bossId)).mapNotNull { it.dps }
