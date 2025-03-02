@@ -2,3 +2,12 @@ discord:
   token: ${DC_TOKEN}
   application-id: ${DC_APP_ID}
   guild-id: ${DC_GID:-1}
+quarkus:
+  log:
+    category:
+      org.inquest:
+        level: DEBUG
+    file:
+      enable: true
+      path: logs/isac.log
+      format: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%c] (%t) %s%e%n"

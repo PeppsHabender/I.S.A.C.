@@ -11,6 +11,7 @@ import org.inquest.entities.isac.Pull
 import org.inquest.entities.isac.RunAnalysis
 import org.inquest.entities.logs.JsonActorParent
 import org.inquest.entities.logs.JsonLog
+import org.inquest.utils.LogExtension.LOG
 import org.inquest.utils.endTime
 import org.inquest.utils.mapWithPutDefault
 import org.inquest.utils.startTime
@@ -24,9 +25,11 @@ class AnalysisService {
     @Inject
     private lateinit var isacDataService: IsacDataService
 
-    fun analyze(logs: List<Pair<String, JsonLog>>): RunAnalysis = logs
+    fun analyze(interactionId: String, logs: List<Pair<String, JsonLog>>): RunAnalysis = logs
         .sortedBy { it.second.startTime() }
         .let { sorted ->
+            LOG.debug("$interactionId: Starting analysis for ${logs.size} logs...")
+
             val start: OffsetDateTime = sorted.first().second.startTime()
             var end: OffsetDateTime? = null
             var downtime: Duration = Duration.ZERO
@@ -35,6 +38,7 @@ class AnalysisService {
             val playerStats: MutableMap<String, PlayerAnalysis> = mutableMapOf()
 
             for ((link, log) in sorted) {
+                LOG.debug("$interactionId: Analyzing $link...")
                 downtime += if (end == null) {
                     Duration.ZERO
                 } else {
@@ -60,15 +64,19 @@ class AnalysisService {
                 )
 
                 if (!log.success) {
+                    LOG.debug("$interactionId: $link wasn't successful, skipping player analysis.")
                     downtime += logDuration
                     continue
                 } else if (this.isacDataService.ignore(log.eiEncounterID)) {
+                    LOG.debug("$interactionId: $link contains an ignored encounter, skipping player analysis.")
                     continue
                 }
 
                 groupDps += log.players.groupDps(log.eiEncounterID)
 
-                addPlayerStats(playerStats, log, pulls.last())
+                LOG.debug("$interactionId: Analyzing player stats for $link...")
+                addPlayerStats(interactionId, playerStats, log, pulls.last())
+                LOG.debug("$interactionId: Analyzed player stats for $link.")
             }
 
             val duration: Duration = java.time.Duration.between(start, end).toKotlinDuration()
@@ -82,6 +90,8 @@ class AnalysisService {
                 groupDps.average().roundToInt(),
                 playerStats.values.toList(),
             )
+        }.also {
+            LOG.debug("$interactionId: Finished analysis.")
         }
 
     private fun List<JsonActorParent.JsonPlayer>.groupDps(bossId: Long?) = groupBy({ it }) { player ->
@@ -90,7 +100,7 @@ class AnalysisService {
         .entries
         .let { players -> players.sumOf { it.value } }
 
-    private fun addPlayerStats(base: MutableMap<String, PlayerAnalysis>, log: JsonLog, pull: Pull) {
+    private fun addPlayerStats(interactionId: String, base: MutableMap<String, PlayerAnalysis>, log: JsonLog, pull: Pull) {
         val boonUptimes: Map<Int, Map<IsacBoon, MutableList<Double>>> by mapWithPutDefault {
             this.isacDataService.boonData.mapKeys { it.value }.mapValues { mutableListOf() }
         }
@@ -100,6 +110,7 @@ class AnalysisService {
         }.map {
             it to it.fetchDps(log.eiEncounterID)
         }.sortedBy { it.second.first }.forEachIndexed { i, (player, dps) ->
+            LOG.debug("$interactionId: Analyzing stats for player ${player.account}...")
             val group = player.group ?: -1
             val analysis: PlayerAnalysis = base.computeIfAbsent(player.account!!, ::PlayerAnalysis)
 
@@ -153,9 +164,9 @@ class AnalysisService {
             // I hate dhuum kites
             gen > 3
         } else if (isacDataService.ignoreForBoons(encounterId)) {
-            gen > 25
+            gen > 20
         } else {
-            gen > 50
+            gen > 40
         }
     }.maxByOrNull { it.generation }
 

@@ -5,6 +5,7 @@ import org.inquest.discord.CustomColors
 import org.inquest.discord.createEmbed
 import org.inquest.discord.withEmbed
 import org.inquest.discord.withFile
+import org.inquest.utils.errorLog
 import reactor.core.publisher.Mono
 
 /**
@@ -24,6 +25,7 @@ object ErrorEmbeds {
      */
     fun <T> ChatInputInteractionEvent.noLogsException(): Mono<T> = editReply()
         .withEmbed(NO_LOGS_EXC_MSG, color = CustomColors.RED_COLOR)
+        .errorLog(NO_LOGS_EXC_MSG)
         .then(Mono.empty())
 
     /**
@@ -31,6 +33,7 @@ object ErrorEmbeds {
      */
     fun <T> ChatInputInteractionEvent.handleFetchingException(): Mono<T> = editReply()
         .withEmbed(FETCHING_EXC_MSG, color = CustomColors.RED_COLOR)
+        .errorLog(FETCHING_EXC_MSG)
         .then(Mono.empty())
 
     /**
@@ -39,6 +42,7 @@ object ErrorEmbeds {
     fun <T> ChatInputInteractionEvent.handleAnalyzeException(ex: Throwable): Mono<T> = editReply()
         .withEmbed(ANALYZE_EXC_MSG, color = CustomColors.RED_COLOR)
         .withFile("stacktrace.log", ex.also(Throwable::printStackTrace).stackTraceToString())
+        .errorLog(ANALYZE_WM_EXC_MSG, ex)
         .then(Mono.empty())
 
     /**

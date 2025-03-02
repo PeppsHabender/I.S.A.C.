@@ -66,3 +66,7 @@ kotlin {
         javaParameters = true
     }
 }
+
+tasks.quarkusDev {
+    workingDirectory = rootProject.projectDir
+}

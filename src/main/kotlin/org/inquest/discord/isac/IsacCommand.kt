@@ -2,6 +2,7 @@ package org.inquest.discord.isac
 
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.core.`object`.entity.channel.ThreadChannel
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.StartThreadSpec
 import discord4j.discordjson.json.ApplicationCommandRequest
@@ -28,17 +29,20 @@ import org.inquest.discord.isac.OverviewEmbed.createOverviewEmbed
 import org.inquest.discord.isac.TopStatsEmbed.createTopStatsEmbed
 import org.inquest.discord.optionAsBoolean
 import org.inquest.discord.optionAsString
-import org.inquest.discord.toMono
-import org.inquest.discord.toUni
 import org.inquest.discord.withBooleanOption
 import org.inquest.discord.withStringOption
 import org.inquest.entities.isac.RunAnalysis
 import org.inquest.services.AnalysisService
 import org.inquest.services.IsacDataService
+import org.inquest.utils.LogExtension.LOG
+import org.inquest.utils.infoLog
 import org.inquest.utils.startTime
+import org.inquest.utils.toMono
+import org.inquest.utils.toUni
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import java.util.UUID
 
 /**
  * Main entry point of the bot. Provides a slash command with the name 'analyze'.
@@ -114,14 +118,27 @@ class IsacCommand : CommandListener {
             .build()
     }
 
-    override fun handle(event: ChatInputInteractionEvent): Mono<Void> = event.deferReply().then(handleLogs(event))
+    override fun handle(event: ChatInputInteractionEvent): Mono<Void> {
+        val interactionId = UUID.randomUUID().toString().substringBefore("-")
+
+        return event.deferReply().doOnSubscribe {
+            LOG.info(
+                "$interactionId: Received analyze request from [{}] in channel [{}]...",
+                event.interaction.guild.map { it.name }.blockOptional().orElse(""),
+                event.interaction.channel.map { it.data.name().get() }.blockOptional().orElse(""),
+            )
+        }.then(handleLogs(interactionId, event))
+    }
 
     /**
      * Extracts logs from the user input, downloads the ei jsons, analyzes the downloaded logs and finally builds the embeded responses.
      */
-    private fun handleLogs(event: ChatInputInteractionEvent): Mono<Void> = Flux.fromIterable(event.extractLogs())
+    private fun handleLogs(interactionId: String, event: ChatInputInteractionEvent): Mono<Void> = Mono.just(event.extractLogs())
+        .infoLog({ "$interactionId: Fetching ${it.size} logs..." })
+        .flatMapMany { Flux.fromIterable(it) }
         .parallel()
         .runOn(Schedulers.fromExecutor(this.managedExecutor))
+        .infoLog { "$interactionId: Downloading log $it..." }
         .flatMap { link ->
             this.dpsReportClient
                 .fetchJson(link)
@@ -129,47 +146,53 @@ class IsacCommand : CommandListener {
                 .toMono()
         }.collectSortedList { o1, o2 -> o1.second.startTime().compareTo(o2.second.startTime()) }
         .flatMap { if (it.isEmpty()) event.noLogsException() else Mono.just(it) }
+        .infoLog("$interactionId: Downloaded logs.")
         .onErrorResume { event.handleFetchingException() }
         .flatMap {
-            if (it.isEmpty()) Mono.empty() else Mono.just(this.analysisService.analyze(it))
+            if (it.isEmpty()) {
+                Mono.empty()
+            } else {
+                Mono.just(this.analysisService.analyze(interactionId, it))
+            }
         }.onErrorResume { event.handleAnalyzeException(it) }
         .flatMap { analysis ->
-            event.editReply().withEmbeds(*analysis.createEmbeds(event).toTypedArray()).map { analysis to it }
-        }.flatMap { (analysis, msg) ->
-            if (!event.optionAsBoolean(WM_OPTION, true)) {
-                return@flatMap Mono.empty()
+            event.editReply()
+                .withEmbeds(*analysis.createEmbeds(event).toTypedArray()).map { analysis to it }
+                .doOnSubscribe { LOG.info("$interactionId: Putting together embeds...") }
+        }.infoLog("$interactionId: Successfully built embeds.")
+        .flatMap { (analysis, msg) ->
+            if (event.optionAsBoolean(WM_OPTION, true) || event.optionAsBoolean(BOONS_OPTION)) {
+                msg.startThread(StartThreadSpec.builder().name("More Details").build())
+                    .doOnSubscribe { LOG.debug("$interactionId: Creating thread for detailed analysis...") }
+                    .map { analysis to it }
+            } else {
+                Mono.empty()
             }
-
-            msg.startThread(StartThreadSpec.builder().name("More Details").build()).map { analysis to it }
         }.toUni().call { (analysis, thread) ->
-            if (event.optionAsBoolean(WM_OPTION, true)) {
-                thread.createMessageOrShowError(
-                    { wingmanEmbed.createWingmanEmbed(analysis.pulls, analysis.playerStats).dynamic() },
-                ) {
-                    analyzeWmException()
-                }.toUni()
-            } else {
-                Uni.createFrom().voidItem()
-            }
+            thread.createForOption(event, WM_OPTION, true, {
+                wingmanEmbed.createWingmanEmbed(interactionId, analysis.pulls, analysis.playerStats).dynamic()
+            }) { analyzeWmException() }
         }.call { (analysis, thread) ->
-            if (event.optionAsBoolean(WM_OPTION, true)) {
-                thread.createMessageOrShowError(
-                    { wingmanEmbed.createWingmanEmbed(analysis.pulls, analysis.playerStats, true).dynamic() },
-                ) {
-                    analyzeWmException()
-                }.toUni()
-            } else {
-                Uni.createFrom().voidItem()
-            }
+            thread.createForOption(event, WM_OPTION, true, {
+                wingmanEmbed.createWingmanEmbed(interactionId, analysis.pulls, analysis.playerStats, true).dynamic()
+            }) { analyzeWmException() }
         }.call { (analysis, thread) ->
-            if (event.optionAsBoolean(BOONS_OPTION, false)) {
-                thread.createMessageOrShowError({ boonStatsEmbed.createOverviewEmbed(analysis, event).dynamic() }) {
-                    analyzeBoonsException()
-                }.toUni()
-            } else {
-                Uni.createFrom().voidItem()
-            }
+            thread.createForOption(event, BOONS_OPTION, false, {
+                boonStatsEmbed.createOverviewEmbed(analysis, event).dynamic()
+            }) { analyzeBoonsException() }
         }.toMono().then()
+
+    private fun ThreadChannel.createForOption(
+        event: ChatInputInteractionEvent,
+        option: String,
+        default: Boolean,
+        message: () -> Array<EmbedCreateSpec>,
+        error: (Throwable) -> EmbedCreateSpec,
+    ) = if (event.optionAsBoolean(option, default)) {
+        createMessageOrShowError(message, error).toUni()
+    } else {
+        Uni.createFrom().voidItem()
+    }
 
     private fun ChatInputInteractionEvent.extractLogs(): List<String> = DPS_REPORT_RGX.findAll(optionAsString("logs")!!).map {
         it.value

@@ -43,9 +43,14 @@ class WingmanEmbed {
     @Inject
     private lateinit var isacDataService: IsacDataService
 
-    fun createWingmanEmbed(bosses: List<Pull>, players: List<PlayerAnalysis>, supports: Boolean = false): EmbedCreateSpec = createEmbed(
+    fun createWingmanEmbed(
+        interactionId: String,
+        bosses: List<Pull>,
+        players: List<PlayerAnalysis>,
+        supports: Boolean = false,
+    ): EmbedCreateSpec = createEmbed(
         createDescription(
-            this.analysisService.compareToWingman(bosses, players, supports),
+            this.analysisService.compareToWingman(interactionId, bosses, players, supports),
             players.associate { it.name to it.mostPlayed() },
             supports,
         ),

@@ -2,18 +2,17 @@ package org.inquest.discord
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandOption
+import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.ThreadChannel
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.InteractionReplyEditMono
 import discord4j.core.spec.MessageCreateFields
-import discord4j.core.spec.MessageCreateMono
 import discord4j.discordjson.json.ApplicationCommandOptionData
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest
 import discord4j.discordjson.possible.Possible
 import discord4j.rest.util.Color
-import io.smallrye.mutiny.Uni
+import org.inquest.utils.errorLog
 import org.inquest.utils.splitStringByNewLine
-import org.reactivestreams.FlowAdapters
 import reactor.core.publisher.Mono
 import java.io.ByteArrayInputStream
 import java.time.Instant
@@ -23,14 +22,26 @@ import kotlin.jvm.optionals.getOrNull
 /**
  * Adds a new string option to the current command.
  */
-fun ImmutableApplicationCommandRequest.Builder.withStringOption(name: String, description: String = "", required: Boolean = true) =
-    addOption(baseCommandOption(name, description, required).type(ApplicationCommandOption.Type.STRING.value).build())
+fun ImmutableApplicationCommandRequest.Builder.withStringOption(
+    name: String,
+    description: String = "",
+    required: Boolean = true,
+): ImmutableApplicationCommandRequest.Builder = baseCommandOption(name, description, required)
+    .type(ApplicationCommandOption.Type.STRING.value)
+    .build()
+    .let(::addOption)
 
 /**
  * Adds a new boolean option to the current command.
  */
-fun ImmutableApplicationCommandRequest.Builder.withBooleanOption(name: String, description: String = "", required: Boolean = true) =
-    addOption(baseCommandOption(name, description, required).type(ApplicationCommandOption.Type.BOOLEAN.value).build())
+fun ImmutableApplicationCommandRequest.Builder.withBooleanOption(
+    name: String,
+    description: String = "",
+    required: Boolean = true,
+): ImmutableApplicationCommandRequest.Builder = baseCommandOption(name, description, required)
+    .type(ApplicationCommandOption.Type.BOOLEAN.value)
+    .build()
+    .let(::addOption)
 
 private fun baseCommandOption(name: String, description: String = "", required: Boolean = true) = ApplicationCommandOptionData.builder()
     .name(name)
@@ -40,18 +51,18 @@ private fun baseCommandOption(name: String, description: String = "", required: 
 /**
  * Creates a new embed within this thread, or falls back to an error one.
  */
-fun ThreadChannel.createMessageOrShowError(
-    message: () -> Array<EmbedCreateSpec>,
-    error: (Throwable) -> EmbedCreateSpec,
-): MessageCreateMono = try {
-    createMessage(*message())
-} catch (ex: Throwable) {
-    ex.printStackTrace()
-    createMessage(error(ex)).withFiles(MessageCreateFields.File.of("stacktrace.log", ex.stackTraceToString().byteInputStream()))
-}
+fun ThreadChannel.createMessageOrShowError(message: () -> Array<EmbedCreateSpec>, error: (Throwable) -> EmbedCreateSpec): Mono<Message> =
+    try {
+        createMessage(*message())
+    } catch (ex: Throwable) {
+        createMessage(error(ex))
+            .withFiles(MessageCreateFields.File.of("stacktrace.log", ex.stackTraceToString().byteInputStream()))
+            .errorLog(ex.message!!, ex)
+    }
 
 /**
- * Makes this embed dynamic, should it reach more than 4096 chars, it is split up into multiple embeds. Title and footer will be added to the first and last one respectively.
+ * Makes this embed dynamic, should it reach more than 4096 chars, it is split up into multiple embeds.
+ * Title and footer will be added to the first and last one respectively.
  */
 fun EmbedCreateSpec.dynamic(): Array<EmbedCreateSpec> = if (this.isDescriptionPresent) {
     val split = description().get().splitStringByNewLine().map {
@@ -80,13 +91,13 @@ fun createEmbed(description: String, title: String? = null, color: Color? = null
 /**
  * Adds a new embed to this reply.
  */
-fun InteractionReplyEditMono.withEmbed(description: String, title: String? = null, color: Color? = null) =
+fun InteractionReplyEditMono.withEmbed(description: String, title: String? = null, color: Color? = null): InteractionReplyEditMono =
     withEmbeds(createEmbed(description, title, color))
 
 /**
  * Adds a new file to this reply.
  */
-fun InteractionReplyEditMono.withFile(fileName: String, bytes: ByteArrayInputStream) =
+fun InteractionReplyEditMono.withFile(fileName: String, bytes: ByteArrayInputStream): InteractionReplyEditMono =
     withFiles(MessageCreateFields.File.of(fileName, bytes))
 
 /**
@@ -98,12 +109,6 @@ fun InteractionReplyEditMono.withFile(fileName: String, str: String) = withFile(
  * Converts [this] into a discord timestamp of the form <t:...>
  */
 fun Temporal.toDiscordTimestamp() = "<t:${Instant.from(this).epochSecond}>"
-
-fun <T> Uni<T>.toMono() = Mono.from(FlowAdapters.toPublisher(convert().toPublisher()))
-
-fun <T> Mono<T>.toUni() = Uni.createFrom().publisher(FlowAdapters.toFlowPublisher(this)).flatMap {
-    if (it == null) Uni.createFrom().nothing() else Uni.createFrom().item(it)
-}
 
 fun ChatInputInteractionEvent.optionAsString(option: String): String? = getOption(option).flatMap {
     it.value

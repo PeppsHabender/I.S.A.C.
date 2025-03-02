@@ -6,6 +6,7 @@ import org.inquest.entities.isac.PlayerAnalysis
 import org.inquest.entities.isac.Profession
 import org.inquest.entities.isac.Pull
 import org.inquest.entities.wingman.BossBench
+import org.inquest.utils.LogExtension.LOG
 import org.inquest.utils.averageOrNull
 
 /**
@@ -19,35 +20,47 @@ class WingmanAnalysisService {
     @Inject
     private lateinit var isacDataService: IsacDataService
 
-    fun compareToWingman(bosses: List<Pull>, players: List<PlayerAnalysis>, supports: Boolean): List<WingmanComparison> =
-        players.mapNotNull { player ->
-            val comparisons = compareToBench(bosses, player, supports).filterNot { it.profession == "*" }
-            if (comparisons.isEmpty()) return@mapNotNull null
+    fun compareToWingman(
+        interactionId: String,
+        bosses: List<Pull>,
+        players: List<PlayerAnalysis>,
+        supports: Boolean,
+    ): List<WingmanComparison> = players.also {
+        LOG.debug("$interactionId: Starting wingman analysis for ${players.size} players...")
+    }.mapNotNull { player ->
+        LOG.debug("$interactionId: Analyzing ${player.name} against wingman benchmarks!")
+        val comparisons = compareToBench(bosses, player, supports).filterNot { it.profession == "*" }
+        if (comparisons.isEmpty()) {
+            LOG.debug("$interactionId: Found no possible comparisons for player ${player.name}!")
+            return@mapNotNull null
+        }
 
-            var dpsSum = 0.0
-            var benchSum = 0.0
-            comparisons.forEach {
-                dpsSum += it.dps
-                benchSum += it.bench
-            }
+        var dpsSum = 0.0
+        var benchSum = 0.0
+        comparisons.forEach {
+            dpsSum += it.dps
+            benchSum += it.bench
+        }
 
-            WingmanComparison(
-                player.name,
-                DpsComparison(
-                    null,
-                    false,
-                    null,
-                    null,
-                    null,
-                    dpsSum / benchSum,
-                    dpsSum / bosses.filter { it.success }.size,
-                    benchSum / bosses.filter { it.success }.size,
-                    comparisons.mapNotNull { it.boonEmote }.groupingBy { it }.eachCount().maxByOrNull { it.value }?.key,
-                ),
-                comparisons.first(),
-                comparisons.last(),
-            )
-        }.sortedByDescending { it.average.dps }
+        WingmanComparison(
+            player.name,
+            DpsComparison(
+                null,
+                false,
+                null,
+                null,
+                null,
+                dpsSum / benchSum,
+                dpsSum / bosses.filter { it.success }.size,
+                benchSum / bosses.filter { it.success }.size,
+                comparisons.mapNotNull { it.boonEmote }.groupingBy { it }.eachCount().maxByOrNull { it.value }?.key,
+            ),
+            comparisons.first(),
+            comparisons.last(),
+        )
+    }.sortedByDescending { it.average.dps }.also {
+        LOG.debug("$interactionId: Finished wingman analysis.")
+    }
 
     private fun compareToBench(bosses: List<Pull>, player: PlayerAnalysis, supports: Boolean): List<DpsComparison> = bosses.filter {
         it.success && it.triggerId != 24485L && !isacDataService.ignore(it.eiEncounterId) && !it.embo
