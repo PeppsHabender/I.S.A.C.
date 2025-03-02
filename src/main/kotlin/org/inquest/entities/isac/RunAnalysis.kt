@@ -24,7 +24,7 @@ data class Pull(
     val cm: Boolean,
     val embo: Boolean,
     val duration: Duration,
-    val remainingHp: Double,
+    val remainingHpPercent: Double,
 ) {
     lateinit var boonUptimes: Map<Int, Map<IsacBoon, Double>>
 }

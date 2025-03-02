@@ -8,6 +8,8 @@ import org.inquest.services.IsacDataService
 import org.inquest.utils.appendMono
 import org.inquest.utils.format
 import org.inquest.utils.space
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 /**
  * Contains embeds related to listing all evaluated logs.
@@ -54,13 +56,13 @@ object LogListingEmbeds {
     private fun RunAnalysis.wipeLogsStr(isacDataService: IsacDataService) = StringBuilder()
         .apply {
             pulls
-                .filter { !it.success }
+                .filter { !it.success && it.duration > 20.0.toDuration(DurationUnit.SECONDS) && it.remainingHpPercent < 95 }
                 .forEach {
                     append("[")
                     if (it.cm) append("[CM] ")
                     append(isacDataService.shortName(it.eiEncounterId) ?: it.boss)
                     space()
-                    appendMono("(${(it.remainingHp * 100).format("#.##")}%)")
+                    appendMono("(${it.remainingHpPercent.format("#.##")}%)")
                     append("](")
                     append(it.link)
                     append(")")

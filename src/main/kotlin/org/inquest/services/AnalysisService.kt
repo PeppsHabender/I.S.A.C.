@@ -60,7 +60,7 @@ class AnalysisService {
                     log.isEmbo(),
                     logDuration,
                     (targetAlive?.finalHealth ?: 0) /
-                        (targetAlive?.totalHealth ?: 1).toDouble(),
+                        (targetAlive?.totalHealth ?: 1).toDouble() * 100,
                 )
 
                 if (!log.success) {
