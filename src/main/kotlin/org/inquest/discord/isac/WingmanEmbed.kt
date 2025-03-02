@@ -114,13 +114,13 @@ class WingmanEmbed {
             append(CustomEmojis.POWER)
         }
 
-        comparison.log?.let { append("[") }
         append("(")
         append((comparison.dps / 1000).format("#.# k"))
         append(" of ")
+        comparison.benchLog?.let { append("[") }
         append((comparison.bench / 1000).format("#.# k"))
+        comparison.benchLog?.let { append("]($it)") }
         append(")")
-        comparison.log?.let { append("]($it)") }
         comparison.eiEncounterId?.let {
             space()
             isacDataService.emoteFor(it, comparison.cm)?.let(::append)

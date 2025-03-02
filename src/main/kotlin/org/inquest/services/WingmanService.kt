@@ -58,6 +58,6 @@ class WingmanService {
     fun bossBench(id: Long) = this.bossBench[id]
 
     companion object {
-        private val UNKNOWN_BOSS = BossBench("-10000000", emptyMap(), null, null, null)
+        private val UNKNOWN_BOSS = BossBench("-10000000", null, null, null, null, null, null)
     }
 }

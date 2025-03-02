@@ -53,6 +53,7 @@ class WingmanAnalysisService {
                 dpsSum / benchSum,
                 dpsSum / bosses.filter { it.success }.size,
                 benchSum / bosses.filter { it.success }.size,
+                null,
                 comparisons.mapNotNull { it.boonEmote }.groupingBy { it }.eachCount().maxByOrNull { it.value }?.key,
             ),
             comparisons.first(),
@@ -71,7 +72,7 @@ class WingmanAnalysisService {
         val triggerId = if (boss.cm) -boss.triggerId else boss.triggerId
         val dpsBench = this.wingmanService.bossBench(triggerId) ?: return@mapNotNull null
         val profession = pull?.profession ?: return@mapNotNull null
-        val profBench = professionBench(profession, dpsBench, supports) ?: return@mapNotNull null
+        val (profBench, benchLog) = professionBench(profession, dpsBench, supports) ?: return@mapNotNull null
 
         val playerDps = if (pull.boonSupport == null) {
             null
@@ -95,6 +96,7 @@ class WingmanAnalysisService {
             playerDps / profBench,
             playerDps,
             profBench.toDouble(),
+            benchLog,
             pull.boonSupport?.let { this.isacDataService.boonData[it.boon]?.emote },
         )
     }.sortedBy { it.percent }
@@ -119,5 +121,6 @@ data class DpsComparison(
     val percent: Double,
     val dps: Double,
     val bench: Double,
+    val benchLog: String?,
     val boonEmote: String?,
 )

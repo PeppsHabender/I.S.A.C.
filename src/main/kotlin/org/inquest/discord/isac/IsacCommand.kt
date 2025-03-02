@@ -35,6 +35,7 @@ import org.inquest.entities.isac.RunAnalysis
 import org.inquest.services.AnalysisService
 import org.inquest.services.IsacDataService
 import org.inquest.utils.LogExtension.LOG
+import org.inquest.utils.debugLog
 import org.inquest.utils.infoLog
 import org.inquest.utils.startTime
 import org.inquest.utils.toMono
@@ -138,7 +139,7 @@ class IsacCommand : CommandListener {
         .flatMapMany { Flux.fromIterable(it) }
         .parallel()
         .runOn(Schedulers.fromExecutor(this.managedExecutor))
-        .infoLog { "$interactionId: Downloading log $it..." }
+        .debugLog { "$interactionId: Downloading log $it..." }
         .flatMap { link ->
             this.dpsReportClient
                 .fetchJson(link)
