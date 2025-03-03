@@ -1,4 +1,4 @@
-package org.inquest.discord.isac
+package org.inquest.discord.commands.isac
 
 import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis

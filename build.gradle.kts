@@ -16,6 +16,8 @@ val quarkusPlatformVersion: String by project
 
 dependencies {
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
+    implementation("io.quarkus:quarkus-mongodb-client")
+    implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
     implementation("io.quarkus:quarkus-scheduler")
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-rest-client-jackson")
@@ -33,7 +35,7 @@ dependencies {
 }
 
 group = "org.inquest"
-version = "1.0.1-SNAPSHOT"
+version = "1.0.2-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

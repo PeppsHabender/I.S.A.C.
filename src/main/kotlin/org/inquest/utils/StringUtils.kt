@@ -1,5 +1,6 @@
 package org.inquest.utils
 
+import discord4j.core.`object`.entity.Member
 import org.inquest.discord.toDiscordTimestamp
 import java.time.temporal.Temporal
 
@@ -30,6 +31,11 @@ fun String.splitStringByNewLine(maxLength: Int = 4096): List<String> {
  * Appends the discord timestamp to [this] using [toDiscordTimestamp]
  */
 fun StringBuilder.appendTimestamp(temporal: Temporal) = append(" ${temporal.toDiscordTimestamp()} ")
+
+/**
+ * Mentions the given [member].
+ */
+fun StringBuilder.mention(member: Member) = append("<@${member.id.asString()}>")
 
 /**
  * Appends a space

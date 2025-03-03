@@ -1,10 +1,8 @@
-package org.inquest.discord.isac
+package org.inquest.discord.commands.isac
 
-import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.rest.util.Color
 import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
-import org.inquest.discord.optionAsBoolean
 import org.inquest.entities.isac.PlayerAnalysis
 import org.inquest.entities.isac.RunAnalysis
 import org.inquest.utils.appendBold
@@ -20,20 +18,13 @@ object TopStatsEmbed {
     /**
      * @see TopStatsEmbed
      */
-    fun createTopStatsEmbed(
-        analysis: RunAnalysis,
-        event: ChatInputInteractionEvent,
-        emoji: String,
-        title: String,
-        idx: Int,
-        color: Color,
-    ) = createEmbed(
-        StringBuilder().append(createTopStats(event, analysis, idx)).toString(),
+    fun createTopStatsEmbed(analysis: RunAnalysis, withHeal: Boolean, emoji: String, title: String, idx: Int, color: Color) = createEmbed(
+        StringBuilder().append(createTopStats(withHeal, analysis, idx)).toString(),
         emoji + "__${title}__",
         color,
     )
 
-    private fun createTopStats(event: ChatInputInteractionEvent, analysis: RunAnalysis, idx: Int = 0) = StringBuilder()
+    private fun createTopStats(withHeal: Boolean, analysis: RunAnalysis, idx: Int = 0) = StringBuilder()
         .apply {
             val isTop = idx == 0
 
@@ -78,10 +69,7 @@ object TopStatsEmbed {
                 "Boon Strips   >>",
                 sortBy = { it.boonStrips() },
             )
-            if (
-                event.optionAsBoolean("with_heal") &&
-                analysis.playerStats.any { it.avgHeal() > 0 }
-            ) {
+            if (withHeal && analysis.playerStats.any { it.avgHeal() > 0 }) {
                 createTopStat(
                     analysis,
                     isTop,

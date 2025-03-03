@@ -1,4 +1,4 @@
-package org.inquest.discord.isac
+package org.inquest.discord.commands.isac
 
 import discord4j.core.spec.EmbedCreateFields
 import discord4j.core.spec.EmbedCreateSpec

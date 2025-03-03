@@ -1,6 +1,7 @@
 package org.inquest.discord
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandOption
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.ThreadChannel
@@ -8,7 +9,6 @@ import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.InteractionReplyEditMono
 import discord4j.core.spec.MessageCreateFields
 import discord4j.discordjson.json.ApplicationCommandOptionData
-import discord4j.discordjson.json.ImmutableApplicationCommandRequest
 import discord4j.discordjson.possible.Possible
 import discord4j.rest.util.Color
 import org.inquest.utils.errorLog
@@ -22,26 +22,18 @@ import kotlin.jvm.optionals.getOrNull
 /**
  * Adds a new string option to the current command.
  */
-fun ImmutableApplicationCommandRequest.Builder.withStringOption(
-    name: String,
-    description: String = "",
-    required: Boolean = true,
-): ImmutableApplicationCommandRequest.Builder = baseCommandOption(name, description, required)
-    .type(ApplicationCommandOption.Type.STRING.value)
-    .build()
-    .let(::addOption)
+fun stringOption(name: String, description: String = "", required: Boolean = true): ApplicationCommandOptionData =
+    baseCommandOption(name, description, required)
+        .type(ApplicationCommandOption.Type.STRING.value)
+        .build()
 
 /**
  * Adds a new boolean option to the current command.
  */
-fun ImmutableApplicationCommandRequest.Builder.withBooleanOption(
-    name: String,
-    description: String = "",
-    required: Boolean = true,
-): ImmutableApplicationCommandRequest.Builder = baseCommandOption(name, description, required)
-    .type(ApplicationCommandOption.Type.BOOLEAN.value)
-    .build()
-    .let(::addOption)
+fun booleanOption(name: String, description: String = "", required: Boolean = true): ApplicationCommandOptionData =
+    baseCommandOption(name, description, required)
+        .type(ApplicationCommandOption.Type.BOOLEAN.value)
+        .build()
 
 private fun baseCommandOption(name: String, description: String = "", required: Boolean = true) = ApplicationCommandOptionData.builder()
     .name(name)
@@ -110,11 +102,19 @@ fun InteractionReplyEditMono.withFile(fileName: String, str: String) = withFile(
  */
 fun Temporal.toDiscordTimestamp() = "<t:${Instant.from(this).epochSecond}>"
 
+fun ChatInputInteractionEvent.optionAsOptions(option: String): List<ApplicationCommandInteractionOption> = getOption(option).map {
+    it.options
+}.orElse(emptyList())
+
 fun ChatInputInteractionEvent.optionAsString(option: String): String? = getOption(option).flatMap {
     it.value
-}.map { it.asString() }.orElse(null)
+}.map { it.asString() }.getOrNull()
 
-fun ChatInputInteractionEvent.optionAsBoolean(option: String, default: Boolean = false): Boolean = getOption(option).flatMap {
+fun ChatInputInteractionEvent.optionAsBoolean(option: String): Boolean? = getOption(option).flatMap {
+    it.value
+}.map { it.asBoolean() }.getOrNull()
+
+fun ChatInputInteractionEvent.optionAsBoolean(option: String, default: Boolean): Boolean = getOption(option).flatMap {
     it.value
 }.map { it.asBoolean() }.orElse(default)
 

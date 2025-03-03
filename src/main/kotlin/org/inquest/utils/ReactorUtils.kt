@@ -12,9 +12,19 @@ fun <T> Mono<T>.toUni(): Uni<T> = Uni.createFrom().publisher(FlowAdapters.toFlow
     if (it == null) Uni.createFrom().nothing() else Uni.createFrom().item(it)
 }
 
+fun <T> Uni<T?>.mapNotNull(): Uni<T> = flatMap {
+    if (it == null) {
+        Uni.createFrom().nothing()
+    } else {
+        Uni.createFrom().item(it)
+    }
+}
+
 fun <T> Mono<T>.infoLog(log: (T) -> String, vararg args: Any): Mono<T> = doOnNext { LOG.info(log(it), args) }
 
 fun <T> Mono<T>.infoLog(log: String, vararg args: Any): Mono<T> = doOnNext { LOG.info(log, args) }
+
+fun <T> Mono<T>.debugLog(log: String, vararg args: Any): Mono<T> = doOnNext { LOG.debug(log, args) }
 
 fun <T> Mono<T>.errorLog(log: String, ex: Throwable? = null, vararg args: Any): Mono<T> = doOnNext { LOG.error(log, ex, args) }
 
