@@ -19,6 +19,7 @@ import org.inquest.discord.optionAsOptions
 import org.inquest.entities.isac.Channel
 import org.inquest.entities.isac.ChannelSettings
 import org.inquest.utils.LogExtension.LOG
+import org.inquest.utils.WithLogger
 import org.inquest.utils.appendBold
 import org.inquest.utils.debugLog
 import org.inquest.utils.mention
@@ -33,7 +34,9 @@ import kotlin.jvm.optionals.getOrNull
  * - [org.inquest.discord.commands.CommonOptions]
  */
 @ApplicationScoped
-class ChannelSettingsCommand : CommandListener {
+class ChannelSettingsCommand :
+    CommandListener,
+    WithLogger {
     companion object {
         private const val VIEW_CMD = "view"
         private const val UPDATE_CMD = "update"
@@ -66,7 +69,7 @@ class ChannelSettingsCommand : CommandListener {
         return event.deferReply().then(
             Channel.findOrPut(event.interaction.channelId.asString())
                 .toMono()
-                .debugLog("$interactionId: Received configuration event...")
+                .debugLog(LOG, "$interactionId: Received configuration event...")
                 .flatMap {
                     if (event.getOption(VIEW_CMD).isPresent) {
                         it.writeSettings(event)
@@ -76,7 +79,7 @@ class ChannelSettingsCommand : CommandListener {
                     } else {
                         event.editReply("Unknown Option")
                     }
-                }.onErrorResume { event.raiseException(CHANNEL_CONFIG_EXC_MSG, it, true) }
+                }.onErrorResume { event.raiseException(LOG, CHANNEL_CONFIG_EXC_MSG, it, true) }
                 .then(),
         )
     }

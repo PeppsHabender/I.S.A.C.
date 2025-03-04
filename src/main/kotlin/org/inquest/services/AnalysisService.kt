@@ -12,6 +12,7 @@ import org.inquest.entities.isac.RunAnalysis
 import org.inquest.entities.logs.JsonActorParent
 import org.inquest.entities.logs.JsonLog
 import org.inquest.utils.LogExtension.LOG
+import org.inquest.utils.WithLogger
 import org.inquest.utils.endTime
 import org.inquest.utils.mapWithPutDefault
 import org.inquest.utils.startTime
@@ -21,7 +22,7 @@ import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 
 @ApplicationScoped
-class AnalysisService {
+class AnalysisService : WithLogger {
     @Inject
     private lateinit var isacDataService: IsacDataService
 

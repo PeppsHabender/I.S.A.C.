@@ -51,7 +51,7 @@ class WingmanEmbed {
     ): EmbedCreateSpec = createEmbed(
         createDescription(
             this.analysisService.compareToWingman(interactionId, bosses, players, supports),
-            players.associate { it.name to it.mostPlayed() },
+            players.associate { it.name to it.mostPlayed(supports) },
             supports,
         ),
         title = TITLE_FMT.format(if (supports)"Support " else ""),

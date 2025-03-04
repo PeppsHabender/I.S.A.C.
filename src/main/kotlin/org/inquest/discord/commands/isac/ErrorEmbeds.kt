@@ -5,6 +5,7 @@ import org.inquest.discord.CustomColors
 import org.inquest.discord.withEmbed
 import org.inquest.discord.withFile
 import org.inquest.utils.errorLog
+import org.slf4j.Logger
 import reactor.core.publisher.Mono
 
 /**
@@ -23,13 +24,18 @@ object ErrorEmbeds {
     /**
      * Raises an exception on this interaction, by creating an error embed.
      */
-    fun <T> ChatInputInteractionEvent.raiseException(message: String, exc: Throwable? = null, withStackTrace: Boolean = false): Mono<T> {
+    fun <T> ChatInputInteractionEvent.raiseException(
+        logger: Logger,
+        message: String,
+        exc: Throwable? = null,
+        withStackTrace: Boolean = false,
+    ): Mono<T> {
         val editMono = editReply().withEmbed(message, color = CustomColors.RED_COLOR)
 
         return if (withStackTrace && exc != null) {
             editMono.withFile("stacktrace.log", exc.also(Throwable::printStackTrace).stackTraceToString())
         } else {
             editMono
-        }.errorLog(message, exc).then(Mono.empty())
+        }.errorLog(logger, message, exc).then(Mono.empty())
     }
 }

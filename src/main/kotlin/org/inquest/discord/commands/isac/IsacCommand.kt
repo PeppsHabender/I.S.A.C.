@@ -45,6 +45,7 @@ import org.inquest.entities.isac.RunAnalysis
 import org.inquest.services.AnalysisService
 import org.inquest.services.IsacDataService
 import org.inquest.utils.LogExtension.LOG
+import org.inquest.utils.WithLogger
 import org.inquest.utils.debugLog
 import org.inquest.utils.infoLog
 import org.inquest.utils.startTime
@@ -63,7 +64,9 @@ import kotlin.jvm.optionals.getOrNull
  * - [org.inquest.discord.commands.CommonOptions]
  */
 @ApplicationScoped
-class IsacCommand : CommandListener {
+class IsacCommand :
+    CommandListener,
+    WithLogger {
     companion object {
         private val DPS_REPORT_RGX =
             Regex("https://(?:[ab]\\.)?dps.report/[\\w-]+(?=\\s*?https|$|\\s)")
@@ -144,27 +147,27 @@ class IsacCommand : CommandListener {
      * Extracts logs from the user input, downloads the ei jsons, analyzes the downloaded logs and finally builds the embeded responses.
      */
     private fun handleLogs(interactionId: String, event: ChatInputInteractionEvent): Mono<Void> = Mono.just(event.extractLogs())
-        .infoLog({ "$interactionId: Fetching ${it.size} logs..." })
+        .infoLog(LOG, { "$interactionId: Fetching ${it.size} logs..." })
         .flatMapMany { Flux.fromIterable(it) }
         .parallel()
         .runOn(Schedulers.fromExecutor(this.managedExecutor))
-        .debugLog { "$interactionId: Downloading log $it..." }
+        .debugLog(LOG) { "$interactionId: Downloading log $it..." }
         .flatMap { link ->
             this.dpsReportClient
                 .fetchJson(link)
                 .map { Pair(link, it) }
                 .toMono()
         }.collectSortedList { o1, o2 -> o1.second.startTime().compareTo(o2.second.startTime()) }
-        .flatMap { if (it.isEmpty()) event.raiseException(NO_LOGS_EXC_MSG) else Mono.just(it) }
-        .infoLog("$interactionId: Downloaded logs.")
-        .onErrorResume { event.raiseException(FETCHING_EXC_MSG) }
+        .flatMap { if (it.isEmpty()) event.raiseException(LOG, NO_LOGS_EXC_MSG) else Mono.just(it) }
+        .infoLog(LOG, "$interactionId: Downloaded logs.")
+        .onErrorResume { event.raiseException(LOG, FETCHING_EXC_MSG) }
         .flatMap {
             if (it.isEmpty()) {
                 Mono.empty()
             } else {
                 Mono.just(this.analysisService.analyze(interactionId, it))
             }
-        }.onErrorResume { event.raiseException(ANALYZE_EXC_MSG, it, true) }
+        }.onErrorResume { event.raiseException(LOG, ANALYZE_EXC_MSG, it, true) }
         .flatMap { analysis ->
             event.interaction.channel.flatMap {
                 Channel.findOrPut(it.id.asString()).toMono()
@@ -182,9 +185,9 @@ class IsacCommand : CommandListener {
             }.map { Context(it, analysis) }
         }.flatMap { (settings, analysis) ->
             event.editReply()
-                .withEmbeds(*analysis.createEmbeds(event, settings).toTypedArray()).map { TupleContext(settings, analysis, it) }
+                .withEmbeds(*analysis.createEmbeds(settings).toTypedArray()).map { TupleContext(settings, analysis, it) }
                 .doOnSubscribe { LOG.info("$interactionId: Putting together embeds...") }
-        }.infoLog("$interactionId: Successfully built embeds.")
+        }.infoLog(LOG, "$interactionId: Successfully built embeds.")
         .flatMap { (settings, analysis, msg) ->
             if (settings.compareWingman || settings.analyzeBoons) {
                 msg.startThread(StartThreadSpec.builder().name("More Details").build())
@@ -212,7 +215,7 @@ class IsacCommand : CommandListener {
         message: () -> Array<EmbedCreateSpec>,
         error: (Throwable) -> EmbedCreateSpec,
     ) = if (create) {
-        createMessageOrShowError(message, error).toUni()
+        createMessageOrShowError(LOG, message, error).toUni()
     } else {
         Uni.createFrom().voidItem()
     }
@@ -221,7 +224,7 @@ class IsacCommand : CommandListener {
         it.value
     }.toList()
 
-    private fun RunAnalysis.createEmbeds(event: ChatInputInteractionEvent, channelSettings: ChannelSettings): List<EmbedCreateSpec> {
+    private fun RunAnalysis.createEmbeds(channelSettings: ChannelSettings): List<EmbedCreateSpec> {
         val embeds = mutableListOf<EmbedCreateSpec>()
         embeds += createOverviewEmbed(this, channelSettings.name).dynamic()
         embeds += createTopStatsEmbed(

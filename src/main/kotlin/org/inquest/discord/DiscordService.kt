@@ -16,12 +16,13 @@ import jakarta.annotation.PostConstruct
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.inquest.utils.LogExtension.LOG
+import org.inquest.utils.WithLogger
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Startup
 @ApplicationScoped
-class DiscordService {
+class DiscordService : WithLogger {
     companion object {
         private val INTENTS = IntentSet.of(
             Intent.GUILD_MESSAGES,

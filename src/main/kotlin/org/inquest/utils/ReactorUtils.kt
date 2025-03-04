@@ -1,8 +1,8 @@
 package org.inquest.utils
 
 import io.smallrye.mutiny.Uni
-import org.inquest.utils.LogExtension.LOG
 import org.reactivestreams.FlowAdapters
+import org.slf4j.Logger
 import reactor.core.publisher.Mono
 import reactor.core.publisher.ParallelFlux
 
@@ -20,12 +20,14 @@ fun <T> Uni<T?>.mapNotNull(): Uni<T> = flatMap {
     }
 }
 
-fun <T> Mono<T>.infoLog(log: (T) -> String, vararg args: Any): Mono<T> = doOnNext { LOG.info(log(it), args) }
+fun <T> Mono<T>.infoLog(logger: Logger, log: (T) -> String, vararg args: Any): Mono<T> = doOnNext { logger.info(log(it), args) }
 
-fun <T> Mono<T>.infoLog(log: String, vararg args: Any): Mono<T> = doOnNext { LOG.info(log, args) }
+fun <T> Mono<T>.infoLog(logger: Logger, log: String, vararg args: Any): Mono<T> = doOnNext { logger.info(log, args) }
 
-fun <T> Mono<T>.debugLog(log: String, vararg args: Any): Mono<T> = doOnNext { LOG.debug(log, args) }
+fun <T> Mono<T>.debugLog(logger: Logger, log: String, vararg args: Any): Mono<T> = doOnNext { logger.debug(log, args) }
 
-fun <T> Mono<T>.errorLog(log: String, ex: Throwable? = null, vararg args: Any): Mono<T> = doOnNext { LOG.error(log, ex, args) }
+fun <T> Mono<T>.errorLog(logger: Logger, log: String, ex: Throwable? = null, vararg args: Any): Mono<T> = doOnNext {
+    logger.error(log, ex, args)
+}
 
-fun <T> ParallelFlux<T>.debugLog(log: (T) -> String): ParallelFlux<T> = doOnNext { LOG.debug(log(it)) }
+fun <T> ParallelFlux<T>.debugLog(logger: Logger, log: (T) -> String): ParallelFlux<T> = doOnNext { logger.debug(log(it)) }

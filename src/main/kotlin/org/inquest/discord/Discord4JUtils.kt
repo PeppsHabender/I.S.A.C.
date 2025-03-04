@@ -13,6 +13,7 @@ import discord4j.discordjson.possible.Possible
 import discord4j.rest.util.Color
 import org.inquest.utils.errorLog
 import org.inquest.utils.splitStringByNewLine
+import org.slf4j.Logger
 import reactor.core.publisher.Mono
 import java.io.ByteArrayInputStream
 import java.time.Instant
@@ -43,14 +44,17 @@ private fun baseCommandOption(name: String, description: String = "", required: 
 /**
  * Creates a new embed within this thread, or falls back to an error one.
  */
-fun ThreadChannel.createMessageOrShowError(message: () -> Array<EmbedCreateSpec>, error: (Throwable) -> EmbedCreateSpec): Mono<Message> =
-    try {
-        createMessage(*message())
-    } catch (ex: Throwable) {
-        createMessage(error(ex))
-            .withFiles(MessageCreateFields.File.of("stacktrace.log", ex.stackTraceToString().byteInputStream()))
-            .errorLog(ex.message!!, ex)
-    }
+fun ThreadChannel.createMessageOrShowError(
+    logger: Logger,
+    message: () -> Array<EmbedCreateSpec>,
+    error: (Throwable) -> EmbedCreateSpec,
+): Mono<Message> = try {
+    createMessage(*message())
+} catch (ex: Throwable) {
+    createMessage(error(ex))
+        .withFiles(MessageCreateFields.File.of("stacktrace.log", ex.stackTraceToString().byteInputStream()))
+        .errorLog(logger, ex.message ?: "Unknown Message", ex)
+}
 
 /**
  * Makes this embed dynamic, should it reach more than 4096 chars, it is split up into multiple embeds.

@@ -7,13 +7,14 @@ import org.inquest.entities.isac.Profession
 import org.inquest.entities.isac.Pull
 import org.inquest.entities.wingman.BossBench
 import org.inquest.utils.LogExtension.LOG
+import org.inquest.utils.WithLogger
 import org.inquest.utils.averageOrNull
 
 /**
  * Uses the [WingmanService] and provides a detailed dps comparison to the wingman benchmarks.
  */
 @ApplicationScoped
-class WingmanAnalysisService {
+class WingmanAnalysisService : WithLogger {
     @Inject
     private lateinit var wingmanService: WingmanService
 
@@ -66,18 +67,18 @@ class WingmanAnalysisService {
     private fun compareToBench(bosses: List<Pull>, player: PlayerAnalysis, supports: Boolean): List<DpsComparison> = bosses.filter {
         it.success && it.triggerId != 24485L && !isacDataService.ignore(it.eiEncounterId) && !it.embo
     }.mapNotNull { boss ->
-        val pull = player.pulls[boss]
-        if (pull?.maybeHealer == true || (pull?.boonSupport == null) == supports) return@mapNotNull null
+        val pull = player.pulls[boss] ?: return@mapNotNull null
+        if (pull.maybeHealer || pull.isSupport != supports) return@mapNotNull null
 
         val triggerId = if (boss.cm) -boss.triggerId else boss.triggerId
         val dpsBench = this.wingmanService.bossBench(triggerId) ?: return@mapNotNull null
-        val profession = pull?.profession ?: return@mapNotNull null
+        val profession = pull.profession
         val (profBench, benchLog) = professionBench(profession, dpsBench, supports) ?: return@mapNotNull null
 
-        val playerDps = if (pull.boonSupport == null) {
+        val playerDps = if (!pull.isSupport) {
             null
         } else {
-            val isacBoon = this.isacDataService.boonData[pull.boonSupport.boon]
+            val isacBoon = this.isacDataService.boonData[pull.boonSupport!!.boon]
             boss.boonUptimes.values.mapNotNull { it[isacBoon] }.averageOrNull()?.let {
                 if (pull.boonSupport.generation < 50) {
                     pull.dps * pull.boonSupport.generation / 100
