@@ -6,9 +6,17 @@ import org.inquest.discord.commands.CommonOptions.HEAL_OPTION
 import org.inquest.discord.commands.CommonOptions.NAME_OPTION
 import org.inquest.discord.commands.CommonOptions.WM_OPTION
 import org.inquest.discord.stringOption
+import org.jetbrains.kotlinx.kandy.dsl.continuous
+import org.jetbrains.kotlinx.kandy.letsplot.layers.builders.aes.WithX
 import java.util.UUID
 
 fun interactionId() = UUID.randomUUID().toString().substringBefore("-")
+
+object CommonIds {
+    const val GROUP_DPS_EVOLUTION = "group_dps_stats"
+    const val DPS_EVOLUTION = "dps_stats"
+    const val TIME_EVOLUTION = "time_stats"
+}
 
 /**
  * - (name): Name of the analysis. Default: 'Run Analysis'
@@ -29,4 +37,47 @@ object CommonOptions {
         booleanOption(WM_OPTION, "Include a wingman bench dps comparison. Default: True", required = false),
         booleanOption(BOONS_OPTION, "Analyze sub-group specific boon uptimes. Default: False", required = false),
     )
+}
+
+/**
+ * Common constants used in the plotting events.
+ */
+object PlotCommons {
+    /**
+     * Date series.
+     */
+    const val DATE = "date"
+
+    /**
+     * Series name for legends.
+     */
+    const val SERIES = "series"
+
+    /**
+     * Dps series.
+     */
+    const val DPS = "dps"
+
+    /**
+     * Average Dps series.
+     */
+    const val AVERAGE_DPS = "Avg Dps"
+
+    /**
+     * Average boon dps series.
+     */
+    const val AVERAGE_BOON_DPS = "Avg Boon Dps"
+
+    /**
+     * Plot name used for discord returns.
+     */
+    const val PLOT_FILE = "plot.png"
+
+    /**
+     * Adds the [DATE] to the x-axis.
+     */
+    fun WithX.dateX() = x(DATE) {
+        scale = continuous()
+        axis.breaks(format = "%d.%m.%Y")
+    }
 }

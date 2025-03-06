@@ -4,6 +4,7 @@ import discord4j.core.DiscordClientBuilder
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.core.event.domain.interaction.ComponentInteractionEvent
 import discord4j.discordjson.json.ApplicationCommandData
 import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.gateway.intent.Intent
@@ -60,14 +61,26 @@ class DiscordService : WithLogger {
         .block()!!
 
     private fun GatewayDiscordClient.installEventListeners() {
+        LOG.info("Registering event listeners...")
         eventListeners
             .map { it as EventListener<Event> }
-            .map {
-                on(it.eventType)
-                    .flatMap { e -> it.execute(e) }
-                    .onErrorResume { e -> it.handleError(e) }
-                    .subscribe()
+            .forEach { listener ->
+                if (listener is InteractionEventListener) {
+                    on(listener.eventType)
+                        .filter { it is ComponentInteractionEvent && it.customId == listener.handlesId }
+                        .flatMap { listener.execute(it) }
+                        .onErrorResume { listener.handleError(it) }
+                        .subscribe()
+                } else {
+                    on(listener.eventType)
+                        .flatMap { e -> listener.execute(e) }
+                        .onErrorResume { listener.handleError(it) }
+                        .subscribe()
+                }
+
+                LOG.info("Registering event listener ${listener::class.qualifiedName}")
             }
+        LOG.info("Registered event listeners.")
     }
 
     private fun GatewayDiscordClient.installSlashCommands() {

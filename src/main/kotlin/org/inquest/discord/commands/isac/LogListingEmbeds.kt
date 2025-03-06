@@ -5,8 +5,8 @@ import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
 import org.inquest.entities.isac.RunAnalysis
 import org.inquest.services.IsacDataService
+import org.inquest.utils.DoubleExtensions.format
 import org.inquest.utils.appendMono
-import org.inquest.utils.format
 import org.inquest.utils.space
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration

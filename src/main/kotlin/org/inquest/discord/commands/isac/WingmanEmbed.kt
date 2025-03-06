@@ -15,10 +15,10 @@ import org.inquest.services.IsacDataService
 import org.inquest.services.WingmanAnalysisService
 import org.inquest.services.WingmanComparison
 import org.inquest.services.WingmanService
+import org.inquest.utils.DoubleExtensions.format
 import org.inquest.utils.appendBold
 import org.inquest.utils.appendItalic
 import org.inquest.utils.appendMono
-import org.inquest.utils.format
 import org.inquest.utils.space
 
 /**

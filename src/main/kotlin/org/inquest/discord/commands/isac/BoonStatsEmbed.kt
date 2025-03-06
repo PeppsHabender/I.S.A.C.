@@ -10,10 +10,10 @@ import org.inquest.discord.createEmbed
 import org.inquest.entities.isac.IsacBoon
 import org.inquest.entities.isac.RunAnalysis
 import org.inquest.services.IsacDataService
+import org.inquest.utils.DoubleExtensions.format
 import org.inquest.utils.appendBold
 import org.inquest.utils.appendItalic
 import org.inquest.utils.appendMono
-import org.inquest.utils.format
 import org.inquest.utils.mapWithPutDefault
 import org.inquest.utils.padRight
 import org.inquest.utils.space
@@ -35,12 +35,12 @@ class BoonStatsEmbed {
     )
 
     fun StringBuilder.createBoonAnalysis(analysis: RunAnalysis): StringBuilder {
-        val boonAnalyses: Map<Int, StringBuilder> by mapWithPutDefault { StringBuilder().appendBold("Subgroup $it").appendLine() }
+        val boonAnalyses: Map<String, StringBuilder> by mapWithPutDefault { StringBuilder().appendBold("Subgroup $it").appendLine() }
 
         isacDataService.boonData.values.sorted().forEach { boon ->
             analysis.pulls.filter { it.success && !isacDataService.ignoreForBoons(it.eiEncounterId) }.flatMap { pull ->
                 pull.boonUptimes.mapValues { uptimes ->
-                    uptimes.value.filter { (k, _) -> k == boon }.values.first() to pull.link
+                    uptimes.value.uptimes.filter { (k, _) -> k == boon.id.toString() }.values.first() to pull.link
                 }.entries
             }.groupBy({ it.key }) {
                 it.value

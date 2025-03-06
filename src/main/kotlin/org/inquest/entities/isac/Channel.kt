@@ -1,10 +1,12 @@
 package org.inquest.entities.isac
 
-import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Filters.and
+import com.mongodb.client.model.Filters.eq
 import io.quarkus.mongodb.panache.common.MongoEntity
 import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoCompanionBase
 import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoEntityBase
 import io.smallrye.mutiny.Uni
+import org.bson.Document
 import org.bson.codecs.pojo.annotations.BsonCreator
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.codecs.pojo.annotations.BsonProperty
@@ -19,7 +21,7 @@ class Channel : ReactivePanacheMongoEntityBase() {
             Uni.createFrom().item(Channel().apply { this.channelId = id }).call(::persist)
         }.mapNotNull()
 
-        override fun findById(id: String): Uni<Channel?> = find(Filters.eq("_id", id)).firstResult()
+        override fun findById(id: String): Uni<Channel?> = find(eq("_id", id)).firstResult()
     }
 
     @BsonId
@@ -52,4 +54,24 @@ data class ChannelSettings @BsonCreator constructor(
             compareWingman = compareWingman ?: this.compareWingman,
             analyzeBoons = analyzeBoons ?: this.analyzeBoons,
         )
+}
+
+@MongoEntity
+class ChannelAnalysis @BsonCreator constructor() : ReactivePanacheMongoEntityBase() {
+    companion object : ReactivePanacheMongoCompanionBase<ChannelAnalysis, String> {
+        override fun findById(id: String): Uni<ChannelAnalysis?> = find(eq("_id", id)).firstResult()
+
+        fun findLast(channelId: String, name: String, num: Int = 10) = find(
+            and(eq("channelId", channelId), eq("name", name)),
+            Document("analysis.start", -1),
+        ).page(0, num).list()
+    }
+
+    @BsonId
+    lateinit var id: String
+    lateinit var channelId: String
+    lateinit var name: String
+
+    @BsonProperty("analysis")
+    lateinit var analysis: RunAnalysis
 }

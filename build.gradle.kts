@@ -26,6 +26,7 @@ dependencies {
     implementation("io.quarkus:quarkus-config-yaml")
     implementation("io.quarkus:quarkus-arc")
 
+    implementation("org.jetbrains.kotlinx:kandy-lets-plot:0.8.0")
     implementation("com.discord4j:discord4j-core:3.3.0-RC1")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -35,7 +36,7 @@ dependencies {
 }
 
 group = "org.inquest"
-version = "1.0.2-SNAPSHOT"
+version = "1.0.3-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

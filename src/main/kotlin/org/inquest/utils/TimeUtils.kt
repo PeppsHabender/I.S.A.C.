@@ -16,3 +16,6 @@ fun JsonLog.endTime(): OffsetDateTime = this.timeEndStd?.let { OffsetDateTime.pa
  * @return The duration in minutes, rounded to int
  */
 fun Duration.inRoundedMinutes() = (inWholeSeconds / 60.0).roundToInt()
+
+val OffsetDateTime.epochMillis
+    get() = toEpochSecond() * 1000

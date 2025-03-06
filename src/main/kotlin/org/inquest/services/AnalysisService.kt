@@ -3,7 +3,7 @@ package org.inquest.services
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.inquest.entities.isac.BoonSupport
-import org.inquest.entities.isac.IsacBoon
+import org.inquest.entities.isac.BoonUptimes
 import org.inquest.entities.isac.PlayerAnalysis
 import org.inquest.entities.isac.PlayerPull
 import org.inquest.entities.isac.Profession
@@ -59,7 +59,7 @@ class AnalysisService : WithLogger {
                     log.success,
                     log.isCM,
                     log.isEmbo(),
-                    logDuration,
+                    logDuration.inWholeMilliseconds,
                     (targetAlive?.finalHealth ?: 0) /
                         (targetAlive?.totalHealth ?: 1).toDouble() * 100,
                 )
@@ -85,8 +85,8 @@ class AnalysisService : WithLogger {
             RunAnalysis(
                 start,
                 end!!,
-                downtime,
-                duration,
+                downtime.inWholeMilliseconds,
+                duration.inWholeMilliseconds,
                 pulls,
                 groupDps.average().roundToInt(),
                 playerStats.values.toList(),
@@ -102,8 +102,8 @@ class AnalysisService : WithLogger {
         .let { players -> players.sumOf { it.value } }
 
     private fun addPlayerStats(interactionId: String, base: MutableMap<String, PlayerAnalysis>, log: JsonLog, pull: Pull) {
-        val boonUptimes: Map<Int, Map<IsacBoon, MutableList<Double>>> by mapWithPutDefault {
-            this.isacDataService.boonData.mapKeys { it.value }.mapValues { mutableListOf() }
+        val boonUptimes: Map<Int, Map<String, MutableList<Double>>> by mapWithPutDefault {
+            this.isacDataService.boonData.mapKeys { it.value.id.toString() }.mapValues { mutableListOf() }
         }
 
         log.players.filter {
@@ -113,9 +113,9 @@ class AnalysisService : WithLogger {
         }.sortedBy { it.second.first }.forEachIndexed { i, (player, dps) ->
             LOG.debug("$interactionId: Analyzing stats for player ${player.account}...")
             val group = player.group ?: -1
-            val analysis: PlayerAnalysis = base.computeIfAbsent(player.account!!, ::PlayerAnalysis)
+            val analysis: PlayerAnalysis = base.computeIfAbsent(player.account!!) { PlayerAnalysis(it, mutableMapOf()) }
 
-            analysis.pulls += pull to PlayerPull(
+            analysis.pulls += pull.link to PlayerPull(
                 Profession(player.profession ?: "*", dps.second),
                 group,
                 dps.first,
@@ -138,10 +138,11 @@ class AnalysisService : WithLogger {
         }
 
         base.values.filterNot { a -> log.players.any { it.account == a.name } }.forEach {
-            it.pulls[pull] = PlayerPull()
+            it.pulls[pull.link] = PlayerPull()
         }
 
-        pull.boonUptimes = boonUptimes.mapValues { group -> group.value.mapValues { it.value.average() } }
+        pull.boonUptimes =
+            boonUptimes.mapKeys { it.key.toString() }.mapValues { group -> BoonUptimes(group.value.mapValues { it.value.average() }) }
     }
 
     private fun JsonActorParent.JsonPlayer.isProbHk(log: JsonLog) = if (log.eiEncounterID != 132100L) {
@@ -150,10 +151,10 @@ class AnalysisService : WithLogger {
         (log.players.groupBy { it.group }[this.group]?.size ?: 5) < 2
     }
 
-    private fun JsonActorParent.JsonPlayer.boonUptimes(): Map<IsacBoon, Double> = this.buffUptimes.filter {
+    private fun JsonActorParent.JsonPlayer.boonUptimes(): Map<String, Double> = this.buffUptimes.filter {
         it.id in isacDataService.boonData && it.buffData[0].uptime != null
     }.associate {
-        isacDataService.boonData[it.id]!! to it.buffData[0].uptime!!
+        it.id!!.toString() to it.buffData[0].uptime!!
     }
 
     private fun JsonActorParent.JsonPlayer.primaryBoon(encounterId: Long?): BoonSupport? = this.groupBuffs.filter {

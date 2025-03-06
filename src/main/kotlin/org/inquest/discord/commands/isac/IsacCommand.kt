@@ -2,7 +2,10 @@ package org.inquest.discord.commands.isac
 
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.core.`object`.component.ActionRow
+import discord4j.core.`object`.component.Button
 import discord4j.core.`object`.entity.channel.ThreadChannel
+import discord4j.core.`object`.reaction.ReactionEmoji
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.StartThreadSpec
 import discord4j.discordjson.json.ApplicationCommandRequest
@@ -15,6 +18,7 @@ import org.inquest.clients.DpsReportClient
 import org.inquest.discord.CommandListener
 import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis
+import org.inquest.discord.commands.CommonIds
 import org.inquest.discord.commands.CommonOptions
 import org.inquest.discord.commands.CommonOptions.BOONS_OPTION
 import org.inquest.discord.commands.CommonOptions.HEAL_OPTION
@@ -40,6 +44,7 @@ import org.inquest.discord.optionAsBoolean
 import org.inquest.discord.optionAsString
 import org.inquest.discord.stringOption
 import org.inquest.entities.isac.Channel
+import org.inquest.entities.isac.ChannelAnalysis
 import org.inquest.entities.isac.ChannelSettings
 import org.inquest.entities.isac.RunAnalysis
 import org.inquest.services.AnalysisService
@@ -161,34 +166,49 @@ class IsacCommand :
         .flatMap { if (it.isEmpty()) event.raiseException(LOG, NO_LOGS_EXC_MSG) else Mono.just(it) }
         .infoLog(LOG, "$interactionId: Downloaded logs.")
         .onErrorResume { event.raiseException(LOG, FETCHING_EXC_MSG) }
-        .flatMap {
-            if (it.isEmpty()) {
+        .flatMap { ls ->
+            if (ls.isEmpty()) {
                 Mono.empty()
             } else {
-                Mono.just(this.analysisService.analyze(interactionId, it))
+                Mono.just(this.analysisService.analyze(interactionId, ls))
             }
         }.onErrorResume { event.raiseException(LOG, ANALYZE_EXC_MSG, it, true) }
         .flatMap { analysis ->
-            event.interaction.channel.flatMap {
-                Channel.findOrPut(it.id.asString()).toMono()
-            }.map {
-                it.channelSettings
-            }.onErrorResume {
-                Mono.just(ChannelSettings())
-            }.map {
-                it.copy(
-                    name = event.optionAsString(NAME_OPTION),
-                    withHeal = event.optionAsBoolean(HEAL_OPTION),
-                    compareWingman = event.optionAsBoolean(WM_OPTION),
-                    analyzeBoons = event.optionAsBoolean(BOONS_OPTION),
-                )
-            }.map { Context(it, analysis) }
+            event.interaction.channel.flatMap { ch ->
+                Channel.findOrPut(ch.id.asString()).toMono().map {
+                    it.channelSettings
+                }.onErrorResume {
+                    Mono.just(ChannelSettings())
+                }.map {
+                    it.copy(
+                        name = event.optionAsString(NAME_OPTION),
+                        withHeal = event.optionAsBoolean(HEAL_OPTION),
+                        compareWingman = event.optionAsBoolean(WM_OPTION),
+                        analyzeBoons = event.optionAsBoolean(BOONS_OPTION),
+                    )
+                }.map { Context(it, analysis) }
+            }
         }.flatMap { (settings, analysis) ->
             event.editReply()
-                .withEmbeds(*analysis.createEmbeds(settings).toTypedArray()).map { TupleContext(settings, analysis, it) }
+                .withEmbeds(*analysis.createEmbeds(settings).toTypedArray())
+                .withComponents(
+                    ActionRow.of(
+                        Button.secondary(CommonIds.TIME_EVOLUTION, ReactionEmoji.of(CustomEmojis.TIME_EMOJI)),
+                        Button.secondary(CommonIds.GROUP_DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.GROUP_DPS_EMOJI)),
+                        Button.secondary(CommonIds.DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.DPS_EMOJI)),
+                    ),
+                )
+                .map { TupleContext(settings, analysis, it) }
                 .doOnSubscribe { LOG.info("$interactionId: Putting together embeds...") }
         }.infoLog(LOG, "$interactionId: Successfully built embeds.")
-        .flatMap { (settings, analysis, msg) ->
+        .flatMap { ctxt ->
+            ChannelAnalysis().apply {
+                this.id = ctxt.subject2.id.asString()
+                this.channelId = ctxt.subject2.channelId.asString()
+                this.name = ctxt.channelSettings.name
+                this.analysis = ctxt.subject1
+            }.persistOrUpdate<ChannelAnalysis>().toMono().map { ctxt }
+        }.flatMap { (settings, analysis, msg) ->
             if (settings.compareWingman || settings.analyzeBoons) {
                 msg.startThread(StartThreadSpec.builder().name("More Details").build())
                     .doOnSubscribe { LOG.debug("$interactionId: Creating thread for detailed analysis...") }

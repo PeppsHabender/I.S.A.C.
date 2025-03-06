@@ -6,9 +6,9 @@ import org.inquest.entities.isac.PlayerAnalysis
 import org.inquest.entities.isac.Profession
 import org.inquest.entities.isac.Pull
 import org.inquest.entities.wingman.BossBench
+import org.inquest.utils.DoubleExtensions.averageOrNull
 import org.inquest.utils.LogExtension.LOG
 import org.inquest.utils.WithLogger
-import org.inquest.utils.averageOrNull
 
 /**
  * Uses the [WingmanService] and provides a detailed dps comparison to the wingman benchmarks.
@@ -67,7 +67,7 @@ class WingmanAnalysisService : WithLogger {
     private fun compareToBench(bosses: List<Pull>, player: PlayerAnalysis, supports: Boolean): List<DpsComparison> = bosses.filter {
         it.success && it.triggerId != 24485L && !isacDataService.ignore(it.eiEncounterId) && !it.embo
     }.mapNotNull { boss ->
-        val pull = player.pulls[boss] ?: return@mapNotNull null
+        val pull = player.pulls[boss.link] ?: return@mapNotNull null
         if (pull.maybeHealer || pull.isSupport != supports) return@mapNotNull null
 
         val triggerId = if (boss.cm) -boss.triggerId else boss.triggerId
@@ -79,7 +79,7 @@ class WingmanAnalysisService : WithLogger {
             null
         } else {
             val isacBoon = this.isacDataService.boonData[pull.boonSupport!!.boon]
-            boss.boonUptimes.values.mapNotNull { it[isacBoon] }.averageOrNull()?.let {
+            boss.boonUptimes.values.mapNotNull { it.uptimes[isacBoon?.id.toString()] }.averageOrNull()?.let {
                 if (pull.boonSupport.generation < 50) {
                     pull.dps * pull.boonSupport.generation / 100
                 } else {
@@ -92,7 +92,7 @@ class WingmanAnalysisService : WithLogger {
             boss.eiEncounterId,
             boss.cm,
             profession.name,
-            profession.isCondi,
+            profession.condi,
             boss.link,
             playerDps / profBench,
             playerDps,
@@ -104,7 +104,7 @@ class WingmanAnalysisService : WithLogger {
 
     private fun professionBench(profession: Profession, dpsBench: BossBench, supports: Boolean) = if (supports) {
         dpsBench.getSupportBench(profession.name)
-    } else if (profession.isCondi) {
+    } else if (profession.condi) {
         dpsBench.getCondiBench(profession.name)
     } else {
         dpsBench.getPowerBench(profession.name)
