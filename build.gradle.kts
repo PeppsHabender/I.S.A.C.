@@ -26,7 +26,9 @@ dependencies {
     implementation("io.quarkus:quarkus-config-yaml")
     implementation("io.quarkus:quarkus-arc")
 
-    implementation("org.jetbrains.kotlinx:kandy-lets-plot:0.8.0")
+    implementation("org.jetbrains.kotlinx:kandy-lets-plot:0.8.0") {
+        exclude(group = "xml-apis", module = "xml-apis")
+    }
     implementation("com.discord4j:discord4j-core:3.3.0-RC1")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
