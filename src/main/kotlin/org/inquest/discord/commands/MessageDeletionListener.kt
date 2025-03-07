@@ -20,6 +20,8 @@ class MessageDeletionListener :
     WithLogger {
     override val eventType: Class<MessageDeleteEvent> = MessageDeleteEvent::class.java
 
+    override fun wantsToHandle(event: MessageDeleteEvent) = true
+
     override fun execute(event: MessageDeleteEvent): Mono<Void> {
         val interactionId = interactionId()
 

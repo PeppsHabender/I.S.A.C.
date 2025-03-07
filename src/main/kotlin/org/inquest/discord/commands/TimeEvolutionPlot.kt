@@ -32,7 +32,7 @@ import kotlin.time.toJavaDuration
  * Creates a time plot, which displays the development of run durations against down time and failed bosses.
  */
 @ApplicationScoped
-class TimeEvolutionPlot : InteractionEventListener<ButtonInteractionEvent> {
+class TimeEvolutionPlot : InteractionEventListener<ButtonInteractionEvent>() {
     companion object {
         private const val TIME = "time"
         private const val DURATION = "duration"

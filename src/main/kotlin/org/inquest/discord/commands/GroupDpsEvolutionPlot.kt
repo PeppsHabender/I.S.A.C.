@@ -33,7 +33,7 @@ import reactor.core.publisher.Mono
  * Creates a plot which shows the development of group dps against average dps and average boon dps.
  */
 @ApplicationScoped
-class GroupDpsEvolutionPlot : InteractionEventListener<ButtonInteractionEvent> {
+class GroupDpsEvolutionPlot : InteractionEventListener<ButtonInteractionEvent>() {
     companion object {
         private const val GROUP_DPS = "Group Dps"
     }

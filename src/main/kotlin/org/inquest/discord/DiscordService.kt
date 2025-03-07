@@ -65,18 +65,18 @@ class DiscordService : WithLogger {
         eventListeners
             .map { it as EventListener<Event> }
             .forEach { listener ->
-                if (listener is InteractionEventListener) {
-                    on(listener.eventType)
-                        .filter { it is ComponentInteractionEvent && it.customId == listener.handlesId }
-                        .flatMap { listener.execute(it) }
-                        .onErrorResume { listener.handleError(it) }
-                        .subscribe()
-                } else {
-                    on(listener.eventType)
-                        .flatMap { e -> listener.execute(e) }
-                        .onErrorResume { listener.handleError(it) }
-                        .subscribe()
-                }
+                on(listener.eventType)
+                    .filter { listener.wantsToHandle(it) }
+                    .filter {
+                        if (listener is InteractionEventListener) {
+                            it is ComponentInteractionEvent && it.customId == listener.handlesId
+                        } else {
+                            true
+                        }
+                    }
+                    .flatMap { listener.execute(it) }
+                    .onErrorResume { listener.handleError(it) }
+                    .subscribe()
 
                 LOG.info("Registering event listener ${listener::class.qualifiedName}")
             }

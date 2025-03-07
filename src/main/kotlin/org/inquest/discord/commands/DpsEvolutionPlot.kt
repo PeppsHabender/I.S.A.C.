@@ -40,7 +40,7 @@ import java.util.concurrent.TimeoutException
  * Creates a plot which shows the dps development for a specific player, asks the user for account name in a modal.
  */
 @ApplicationScoped
-class DpsEvolutionPlot : InteractionEventListener<ButtonInteractionEvent> {
+class DpsEvolutionPlot : InteractionEventListener<ButtonInteractionEvent>() {
     companion object {
         private const val ACC_NAME = "account_name"
         private const val DPS_FMT = "dps_fmt"

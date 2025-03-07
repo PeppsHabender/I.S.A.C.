@@ -75,6 +75,11 @@ class IsacCommand :
     companion object {
         private val DPS_REPORT_RGX =
             Regex("https://(?:[ab]\\.)?dps.report/[\\w-]+(?=\\s*?https|$|\\s)")
+        private val ACTION_BUTTONS = listOf(
+            Button.secondary(CommonIds.TIME_EVOLUTION, ReactionEmoji.of(CustomEmojis.TIME_EMOJI)),
+            Button.secondary(CommonIds.GROUP_DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.GROUP_DPS_EMOJI)),
+            Button.secondary(CommonIds.DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.DPS_EMOJI)),
+        )
     }
 
     override val name: String = "analyze"
@@ -186,19 +191,23 @@ class IsacCommand :
                         compareWingman = event.optionAsBoolean(WM_OPTION),
                         analyzeBoons = event.optionAsBoolean(BOONS_OPTION),
                     )
-                }.map { Context(it, analysis) }
+                }.flatMap {
+                    ChannelAnalysis.findLast(ch.id.asString(), it.name)
+                        .map { ls -> ls.size }
+                        .onFailure().recoverWithItem(0)
+                        .map { count -> TupleContext(it, analysis, count > 0) }
+                        .toMono()
+                }
             }
-        }.flatMap { (settings, analysis) ->
-            event.editReply()
-                .withEmbeds(*analysis.createEmbeds(settings).toTypedArray())
-                .withComponents(
-                    ActionRow.of(
-                        Button.secondary(CommonIds.TIME_EVOLUTION, ReactionEmoji.of(CustomEmojis.TIME_EMOJI)),
-                        Button.secondary(CommonIds.GROUP_DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.GROUP_DPS_EMOJI)),
-                        Button.secondary(CommonIds.DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.DPS_EMOJI)),
-                    ),
+        }.flatMap { (settings, analysis, withButtons) ->
+            var reply = event.editReply().withEmbeds(*analysis.createEmbeds(settings).toTypedArray())
+            if (withButtons) {
+                reply = reply.withComponents(
+                    ActionRow.of(ACTION_BUTTONS),
                 )
-                .map { TupleContext(settings, analysis, it) }
+            }
+
+            return@flatMap reply.map { TupleContext(settings, analysis, it) }
                 .doOnSubscribe { LOG.info("$interactionId: Putting together embeds...") }
         }.infoLog(LOG, "$interactionId: Successfully built embeds.")
         .flatMap { ctxt ->
