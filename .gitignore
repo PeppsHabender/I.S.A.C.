@@ -1,4 +1,5 @@
 logs
+src/main/resources/buildInfo.properties
 
 # Gradle
 .gradle/

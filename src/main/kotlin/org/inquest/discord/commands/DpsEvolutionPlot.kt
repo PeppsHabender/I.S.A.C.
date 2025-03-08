@@ -92,18 +92,20 @@ class DpsEvolutionPlot : InteractionEventListener<ButtonInteractionEvent>() {
 
     private fun List<Pair<OffsetDateTime, Map<String, PlayerAnalysis>>>.plot(accName: String, title: String): ByteArray {
         val times = map { it.first.epochMillis }
-        val playerDps = map { it.second[accName]?.avgDps() ?: 0.0 }
+        var playerDps = map { it.second[accName]?.avgDps() }
 
         val allPulls = map { (_, p) -> p.filterKeys { it != accName }.values.flatMap { it.pulls.values } }
         val avgDps = allPulls.map { pulls -> pulls.filter { !it.isSupport && !it.maybeHealer }.map { it.dps }.average() }
         val avgSuppDps = allPulls.map { pulls -> pulls.filter { it.isSupport && !it.maybeHealer }.map { it.dps }.average() }
         val n = times.size
 
+        val playerTimes = times.mapIndexedNotNull { i, time -> if (playerDps[i] == null) null else time }
+        playerDps = playerDps.filterNotNull()
         val dfPlayer = dataFrameOf(
-            PlotCommons.DATE to times,
+            PlotCommons.DATE to playerTimes,
             PlotCommons.DPS to playerDps,
             DPS_FMT to playerDps.map { it / 1000 }.map { it.format("#.#k") },
-            PlotCommons.SERIES to List(n) { PLAYER_DPS },
+            PlotCommons.SERIES to List(playerTimes.size) { PLAYER_DPS },
         )
 
         val dfAvg = dataFrameOf(

@@ -16,6 +16,7 @@ import io.quarkus.runtime.Startup
 import jakarta.annotation.PostConstruct
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import org.inquest.services.IsacDataService
 import org.inquest.utils.LogExtension.LOG
 import org.inquest.utils.WithLogger
 import reactor.core.publisher.Flux
@@ -37,14 +38,23 @@ class DiscordService : WithLogger {
 
     @All
     @Inject
-    lateinit var eventListeners: MutableList<EventListener<*>>
+    private lateinit var eventListeners: MutableList<EventListener<*>>
 
     @All
     @Inject
-    lateinit var commands: MutableList<CommandListener>
+    private lateinit var commands: MutableList<CommandListener>
+
+    @Inject
+    private lateinit var isacDataService: IsacDataService
 
     @PostConstruct
     fun initDiscordBot() {
+        LOG.info(
+            "Deploying I.S.A.C. in version {} built on {}...",
+            this.isacDataService.buildInfo.version,
+            this.isacDataService.buildInfo.buildTime,
+        )
+
         createDiscordClient().apply {
             installEventListeners()
             installSlashCommands()

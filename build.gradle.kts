@@ -1,3 +1,6 @@
+import java.time.Instant
+import java.util.Properties
+
 plugins {
     kotlin("jvm") version "2.0.21"
     kotlin("plugin.allopen") version "2.0.21"
@@ -15,6 +18,9 @@ val quarkusPlatformArtifactId: String by project
 val quarkusPlatformVersion: String by project
 
 dependencies {
+    compileOnly("org.jetbrains.lets-plot:lets-plot-batik:4.6.1")
+    compileOnly("org.jetbrains.lets-plot:lets-plot-kotlin:4.2.0")
+
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
     implementation("io.quarkus:quarkus-mongodb-client")
     implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
@@ -48,6 +54,7 @@ java {
 tasks.withType<Test> {
     systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
 }
+
 allOpen {
     annotation("jakarta.ws.rs.Path")
     annotation("jakarta.enterprise.context.ApplicationScoped")
@@ -75,3 +82,17 @@ kotlin {
 tasks.quarkusDev {
     workingDirectory = rootProject.projectDir
 }
+
+val cpyInfo = tasks.register("copyBuildInfo") {
+    val timestamp = Instant.now().toEpochMilli()
+
+    val path = project.projectDir.resolve("src/main/resources/buildInfo.properties")
+    if(!path.exists()) path.createNewFile()
+
+    Properties().apply {
+        put("buildTime", timestamp.toString())
+        put("version", version.toString())
+    }.store(path.outputStream(), null)
+}
+
+tasks.findByName("build")?.dependsOn(cpyInfo)

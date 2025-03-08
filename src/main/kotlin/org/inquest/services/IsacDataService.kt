@@ -7,6 +7,10 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.inquest.entities.isac.IsacBoon
 import org.inquest.entities.isac.IsacBoss
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.Properties
 
 /**
  * Contains isac specific information on bosses.
@@ -23,6 +27,12 @@ class IsacDataService {
     private lateinit var boonDataPriv: Map<Long, IsacBoon>
     val boonData: Map<Long, IsacBoon>
         get() = this.boonDataPriv
+    val buildInfo: BuildInfo = this::class.java.classLoader.getResourceAsStream("buildInfo.properties").use {
+        val props = Properties().apply { load(it) }
+        val buildTime = Instant.ofEpochMilli(props["buildTime"].toString().toLong())
+
+        BuildInfo(LocalDateTime.ofInstant(buildTime, ZoneId.of("Europe/Berlin")), props["version"].toString())
+    }
 
     /**
      * Reads the static boss information.
@@ -64,3 +74,5 @@ class IsacDataService {
      */
     fun shortName(id: Long?) = this.bossData[id]?.shortname
 }
+
+data class BuildInfo(val buildTime: LocalDateTime, val version: String)
