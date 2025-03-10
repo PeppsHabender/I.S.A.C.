@@ -106,6 +106,12 @@ class AnalysisService : WithLogger {
             this.isacDataService.boonData.mapKeys { it.value.id.toString() }.mapValues { mutableListOf() }
         }
 
+        val dhuumKite = log.mechanics.filter {
+            it.name == "Mess Fix" || it.fullName == "Messenger Fixation"
+        }.flatMap { it.mechanicsData }
+            .groupingBy { it.actor }.eachCount()
+            .maxByOrNull { it.value }?.key
+
         log.players.filter {
             it.account != null && it.friendlyNPC == false && it.isFake == false && !it.isProbHk(log)
         }.map {
@@ -115,6 +121,7 @@ class AnalysisService : WithLogger {
             val group = player.group ?: -1
             val analysis: PlayerAnalysis = base.computeIfAbsent(player.account!!) { PlayerAnalysis(it, mutableMapOf()) }
 
+            val primBoon = player.primaryBoon(log.eiEncounterID, dhuumKite)
             analysis.pulls += pull.link to PlayerPull(
                 Profession(player.profession ?: "*", dps.second),
                 group,
@@ -128,9 +135,9 @@ class AnalysisService : WithLogger {
                 player.support[0].boonStrips?.toInt() ?: 0,
                 player.totalDamageTaken[0].mapNotNull { it.totalDamage }.sum(),
                 player.combatReplayData?.down?.size ?: 0,
-                player.primaryBoon(log.eiEncounterID),
+                primBoon,
                 // For now.. Just assume that a player is a healer with a somewhat high heal score
-                (player.healing ?: 0) > 7,
+                (primBoon != null && dps.first < 4000) || (player.healing ?: 0) > 7,
                 player.boonUptimes(),
             ).also {
                 it.boonUptimes.forEach { (boon, upt) -> boonUptimes.getValue(group)[boon]?.add(upt) }
@@ -157,12 +164,12 @@ class AnalysisService : WithLogger {
         it.id!!.toString() to it.buffData[0].uptime!!
     }
 
-    private fun JsonActorParent.JsonPlayer.primaryBoon(encounterId: Long?): BoonSupport? = this.groupBuffs.filter {
+    private fun JsonActorParent.JsonPlayer.primaryBoon(encounterId: Long?, dhuumKite: String?): BoonSupport? = this.groupBuffs.filter {
         isacDataService.boonData[it.id]?.isPrimary ?: false
     }.mapNotNull { boon ->
         boon.id?.let { id -> boon.buffData.firstOrNull()?.generation?.let { BoonSupport(id, it) } }
     }.filter { (_, gen) ->
-        if (encounterId == 132358L) {
+        if (dhuumKite == account) {
             // I hate dhuum kites
             gen > 3
         } else if (isacDataService.ignoreForBoons(encounterId)) {

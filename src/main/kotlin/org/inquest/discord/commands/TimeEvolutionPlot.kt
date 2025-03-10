@@ -35,8 +35,8 @@ import kotlin.time.toJavaDuration
 class TimeEvolutionPlot : InteractionEventListener<ButtonInteractionEvent>() {
     companion object {
         private const val TIME = "time"
-        private const val DURATION = "duration"
-        private const val DOWNTIME = "downtime"
+        private const val DURATION = "Duration"
+        private const val DOWNTIME = "Downtime"
     }
 
     override val handlesId: String = CommonIds.TIME_EVOLUTION
@@ -46,7 +46,7 @@ class TimeEvolutionPlot : InteractionEventListener<ButtonInteractionEvent>() {
         if (event.message.isEmpty) return Mono.empty()
 
         return plotTime(event.message.get()).flatMap {
-            event.reply().withFiles(
+            event.reply().withEphemeral(true).withFiles(
                 MessageCreateFields.File.of(PlotCommons.PLOT_FILE, it.inputStream()),
             )
         }

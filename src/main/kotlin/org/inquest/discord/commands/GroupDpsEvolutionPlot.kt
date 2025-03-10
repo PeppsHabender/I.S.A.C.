@@ -52,7 +52,7 @@ class GroupDpsEvolutionPlot : InteractionEventListener<ButtonInteractionEvent>()
                     run.analysis
                 }
             }.toMono().flatMap { (name, ls) ->
-                event.reply().withFiles(
+                event.reply().withEphemeral(true).withFiles(
                     MessageCreateFields.File.of(PlotCommons.PLOT_FILE, ls.plot("$name Group Dps Evolution").inputStream()),
                 )
             }
