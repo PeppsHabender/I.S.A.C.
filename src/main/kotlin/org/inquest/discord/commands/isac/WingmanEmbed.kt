@@ -30,7 +30,7 @@ class WingmanEmbed {
     companion object {
         private const val TITLE_FMT = "${CustomEmojis.DPS}__%sDps Performance__"
         private const val HEADER_FMT = "Compared to Wingman %sTop-Dps for Boss and Class."
-        private const val FOOTER = "Please note that there is no comparison for KO, as I.S.A.C. uses cleave dps there..."
+        private const val FOOTER = "Please note that I.S.A.C. uses target dps for wingman analysis..."
         private const val NO_DATA = "I.S.A.C. has no wingman data available right now..."
     }
 

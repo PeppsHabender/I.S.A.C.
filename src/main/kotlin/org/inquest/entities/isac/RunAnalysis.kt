@@ -71,6 +71,7 @@ data class PlayerPull @BsonCreator constructor(
     @BsonProperty("boonSupport") val boonSupport: BoonSupport?,
     @BsonProperty("maybeHealer") val maybeHealer: Boolean,
     @BsonProperty("boonUptimes") val boonUptimes: Map<String, Double>,
+    @BsonProperty("targetDps") val targetDps: Int?,
 ) {
     companion object {
         operator fun invoke(): PlayerPull = PlayerPull(
@@ -89,11 +90,15 @@ data class PlayerPull @BsonCreator constructor(
             null,
             false,
             emptyMap(),
+            null,
         )
     }
 
     @BsonIgnore
     val isSupport: Boolean = this.boonSupport != null
+
+    @BsonIgnore
+    val targetDpsNonNUll: Int = this.targetDps ?: this.dps
 }
 
 @MongoEntity

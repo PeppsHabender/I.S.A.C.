@@ -139,6 +139,7 @@ class AnalysisService : WithLogger {
                 // For now.. Just assume that a player is a healer with a somewhat high heal score
                 (primBoon != null && dps.first < 4000) || (player.healing ?: 0) > 7,
                 player.boonUptimes(),
+                player.fetchTargetDps(),
             ).also {
                 it.boonUptimes.forEach { (boon, upt) -> boonUptimes.getValue(group)[boon]?.add(upt) }
             }
@@ -193,4 +194,6 @@ class AnalysisService : WithLogger {
         }.reduce { p1, p2 -> (p1.first + p2.first) to (p1.second + p2.second) }.let {
             (it.first + it.second) to (it.first > it.second)
         }
+
+    private fun JsonActorParent.JsonPlayer.fetchTargetDps(): Int = this.dpsTargets[0][0].dps ?: 0
 }

@@ -65,7 +65,7 @@ class WingmanAnalysisService : WithLogger {
     }
 
     private fun compareToBench(bosses: List<Pull>, player: PlayerAnalysis, supports: Boolean): List<DpsComparison> = bosses.filter {
-        it.success && it.triggerId != 24485L && !isacDataService.ignore(it.eiEncounterId) && !it.embo
+        it.success && !isacDataService.ignore(it.eiEncounterId) && !it.embo
     }.mapNotNull { boss ->
         val pull = player.pulls[boss.link] ?: return@mapNotNull null
         if (pull.maybeHealer || pull.isSupport != supports) return@mapNotNull null
@@ -81,12 +81,12 @@ class WingmanAnalysisService : WithLogger {
             val isacBoon = this.isacDataService.boonData[pull.boonSupport!!.boon]
             boss.boonUptimes.values.mapNotNull { it.uptimes[isacBoon?.id.toString()] }.averageOrNull()?.let {
                 if (pull.boonSupport.generation < 50) {
-                    pull.dps * pull.boonSupport.generation / 100
+                    pull.targetDpsNonNUll * pull.boonSupport.generation / 100
                 } else {
-                    pull.dps * it / 100
+                    pull.targetDpsNonNUll * it / 100
                 }
             }
-        } ?: pull.dps.toDouble()
+        } ?: pull.targetDpsNonNUll.toDouble()
 
         DpsComparison(
             boss.eiEncounterId,
