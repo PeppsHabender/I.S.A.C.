@@ -71,6 +71,7 @@ data class PlayerPull @BsonCreator constructor(
     @BsonProperty("boonSupport") val boonSupport: BoonSupport?,
     @BsonProperty("maybeHealer") val maybeHealer: Boolean,
     @BsonProperty("boonUptimes") val boonUptimes: Map<String, Double>,
+    // This is lowkey coupled to the wingman dps
     @BsonProperty("targetDps") val targetDps: Int?,
 ) {
     companion object {
