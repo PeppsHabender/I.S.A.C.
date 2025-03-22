@@ -139,7 +139,7 @@ class AnalysisService : WithLogger {
                 // For now.. Just assume that a player is a healer with a somewhat high heal score
                 (primBoon != null && dps.first < 4000) || (player.healing ?: 0) > 7,
                 player.boonUptimes(),
-                if (log.triggerID == 24266L) player.fetchTargetDps() else dps.first,
+                if (log.eiEncounterID == 262915L) player.fetchTargetDps() else dps.first,
             ).also {
                 it.boonUptimes.forEach { (boon, upt) -> boonUptimes.getValue(group)[boon]?.add(upt) }
             }
