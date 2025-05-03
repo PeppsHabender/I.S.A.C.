@@ -55,7 +55,7 @@ class WingmanService {
     /**
      * @return The benchmark for the boss with the given [id]
      */
-    fun bossBench(id: Long) = this.bossBench[id]
+    fun bossBench(id: Long, fallback: Long?) = this.bossBench[id] ?: this.bossBench[fallback]
 
     companion object {
         private val UNKNOWN_BOSS = BossBench("-10000000", null, null, null, null, null, null)

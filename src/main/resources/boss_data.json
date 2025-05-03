@@ -721,6 +721,7 @@
   {
     "boss": "Harvest Temple",
     "eliteInsightsId": 262916,
+    "wingmanId": 24375,
     "validForTopStat": true,
     "emote": {
       "normal": "<:ht:1340794299586973798>",
@@ -795,6 +796,57 @@
     "validForTopStat": false,
     "validForBoons": false,
     "shortname": "Spirit Race",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Godspoil Greer",
+    "eliteInsightsId": 133121,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:greer:1368371154678452254>",
+      "challenge": "<:greercm:1368371318243983370>"
+    },
+    "shortname": "Greer",
+    "targets": [
+      0,
+      1,
+      2
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Godsquall Decima",
+    "eliteInsightsId": 133122,
+    "wingmanId": 26774,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:deci:1368371379673628702>",
+      "challenge": "<:decicm:1368371420085751848>"
+    },
+    "shortname": "Deci",
+    "targets": [
+      0
+    ],
+    "phases": [
+      0
+    ]
+  },
+  {
+    "boss": "Godscream Ura",
+    "eliteInsightsId": 133123,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:ura:1368371507293716490>",
+      "challenge": "<:uracm:1368371542173552678>"
+    },
+    "shortname": "Ura",
     "targets": [
       0
     ],

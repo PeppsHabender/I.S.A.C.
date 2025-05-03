@@ -21,11 +21,13 @@ data class IsacBoon @JsonCreator constructor(
 data class IsacBoss(
     val boss: String,
     val eliteInsightsId: Long,
+    val wingmanId: Long,
     val validForTopStat: Boolean,
     val validForBoons: Boolean? = true,
     val emote: IsacEmote?,
     val shortname: String?,
     val targets: List<Int>?,
+    val targetsExclude: List<Int>?,
     val phases: List<Int>,
 )
 

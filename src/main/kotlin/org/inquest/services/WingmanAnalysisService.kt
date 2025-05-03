@@ -71,7 +71,8 @@ class WingmanAnalysisService : WithLogger {
         if (pull.maybeHealer || pull.isSupport != supports) return@mapNotNull null
 
         val triggerId = if (boss.cm) -boss.triggerId else boss.triggerId
-        val dpsBench = this.wingmanService.bossBench(triggerId) ?: return@mapNotNull null
+        val dpsBench =
+            this.wingmanService.bossBench(triggerId, this.isacDataService.wingmanId(boss.eiEncounterId, boss.cm)) ?: return@mapNotNull null
         val profession = pull.profession
         val (profBench, benchLog) = professionBench(profession, dpsBench, supports) ?: return@mapNotNull null
 

@@ -188,8 +188,12 @@ class AnalysisService : WithLogger {
 
     private fun JsonActorParent.JsonPlayer.fetchDps(bossId: Long?): Pair<Int, Boolean> = this.dpsTargets
         .slice(isacDataService.targets(bossId))
-        .mapNotNull { dpsTargets ->
-            dpsTargets[0].condiDps?.let { condi -> dpsTargets[0].powerDps?.let { condi to it } }
+        .mapIndexedNotNull { i, dpsTargets ->
+            if (i in isacDataService.targetsExclude(bossId)) {
+                null
+            } else {
+                dpsTargets[0].condiDps?.let { condi -> dpsTargets[0].powerDps?.let { condi to it } }
+            }
             // dpsTargets.slice(bossData.phases(bossId)).mapNotNull { it.dps }
         }.reduce { p1, p2 -> (p1.first + p2.first) to (p1.second + p2.second) }.let {
             (it.first + it.second) to (it.first > it.second)
