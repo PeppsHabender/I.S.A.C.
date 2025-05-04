@@ -44,7 +44,7 @@ dependencies {
 }
 
 group = "org.inquest"
-version = "1.0.3-SNAPSHOT"
+version = "1.0.4-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

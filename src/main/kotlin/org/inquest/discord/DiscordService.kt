@@ -47,6 +47,8 @@ class DiscordService : WithLogger {
     @Inject
     private lateinit var isacDataService: IsacDataService
 
+    lateinit var gatewayDiscordClient: GatewayDiscordClient
+
     @PostConstruct
     fun initDiscordBot() {
         LOG.info(
@@ -55,7 +57,7 @@ class DiscordService : WithLogger {
             this.isacDataService.buildInfo.buildTime,
         )
 
-        createDiscordClient().apply {
+        this.gatewayDiscordClient = createDiscordClient().apply {
             installEventListeners()
             installSlashCommands()
             installCommandHandlers()
