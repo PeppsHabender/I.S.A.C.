@@ -1,10 +1,18 @@
 package org.inquest.utils
 
+import org.inquest.entities.isac.Pull
 import org.jetbrains.kotlinx.kandy.letsplot.feature.Layout
 import org.jetbrains.kotlinx.kandy.letsplot.style.CustomStyle
 import org.jetbrains.kotlinx.kandy.util.color.Color
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
+
+/**
+ * @return true, when isac considers this wipe a wipe
+ */
+fun Pull.isIsacWipe() = !this.success && this.duration > 20.0.toDuration(DurationUnit.SECONDS) && this.remainingHpPercent < 95
 
 /**
  * Default plotting style for isac plots.

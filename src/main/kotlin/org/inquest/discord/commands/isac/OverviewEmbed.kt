@@ -11,6 +11,7 @@ import org.inquest.utils.IntExtensions.padded
 import org.inquest.utils.appendBold
 import org.inquest.utils.appendMono
 import org.inquest.utils.inRoundedMinutes
+import org.inquest.utils.isIsacWipe
 import org.inquest.utils.space
 import java.text.NumberFormat
 import java.util.Locale
@@ -81,6 +82,6 @@ object OverviewEmbed {
         append(" |")
         append(CustomEmojis.WIPE)
         append("Wipes: ")
-        appendMono(pulls.filterNot(Pull::success).size.padded(2))
+        appendMono(pulls.filter(Pull::isIsacWipe).size.padded(2))
     }
 }

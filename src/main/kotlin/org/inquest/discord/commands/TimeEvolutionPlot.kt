@@ -7,8 +7,10 @@ import jakarta.enterprise.context.ApplicationScoped
 import org.inquest.discord.InteractionEventListener
 import org.inquest.discord.commands.PlotCommons.dateX
 import org.inquest.entities.isac.ChannelAnalysis
+import org.inquest.entities.isac.Pull
 import org.inquest.utils.defaultStyle
 import org.inquest.utils.epochMillis
+import org.inquest.utils.isIsacWipe
 import org.inquest.utils.mapNotNull
 import org.inquest.utils.toMono
 import org.inquest.utils.uppercased
@@ -59,7 +61,7 @@ class TimeEvolutionPlot : InteractionEventListener<ButtonInteractionEvent>() {
             ChannelAnalysis.findLast(message.channelId.asString(), name).map { ls ->
                 name to ls.map { run ->
                     val failed =
-                        run.analysis.pulls.filterNot { it.success }.map { it.duration }.reduceOrNull { d1, d2 -> d1 + d2 } ?: Duration.ZERO
+                        run.analysis.pulls.filter(Pull::isIsacWipe).map { it.duration }.reduceOrNull { d1, d2 -> d1 + d2 } ?: Duration.ZERO
                     run.analysis.start to Triple(run.analysis.duration, run.analysis.downtime, failed)
                 }
             }

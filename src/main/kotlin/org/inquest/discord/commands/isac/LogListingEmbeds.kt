@@ -3,13 +3,13 @@ package org.inquest.discord.commands.isac
 import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
+import org.inquest.entities.isac.Pull
 import org.inquest.entities.isac.RunAnalysis
 import org.inquest.services.IsacDataService
 import org.inquest.utils.DoubleExtensions.format
 import org.inquest.utils.appendMono
+import org.inquest.utils.isIsacWipe
 import org.inquest.utils.space
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 /**
  * Contains embeds related to listing all evaluated logs.
@@ -56,7 +56,7 @@ object LogListingEmbeds {
     private fun RunAnalysis.wipeLogsStr(isacDataService: IsacDataService) = StringBuilder()
         .apply {
             pulls
-                .filter { !it.success && it.duration > 20.0.toDuration(DurationUnit.SECONDS) && it.remainingHpPercent < 95 }
+                .filter(Pull::isIsacWipe)
                 .forEach {
                     append("[")
                     if (it.cm) append("[CM] ")

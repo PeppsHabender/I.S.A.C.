@@ -46,6 +46,7 @@ import org.inquest.discord.stringOption
 import org.inquest.entities.isac.Channel
 import org.inquest.entities.isac.ChannelAnalysis
 import org.inquest.entities.isac.ChannelSettings
+import org.inquest.entities.isac.Pull
 import org.inquest.entities.isac.RunAnalysis
 import org.inquest.services.AnalysisService
 import org.inquest.services.IsacDataService
@@ -53,6 +54,7 @@ import org.inquest.utils.LogExtension.LOG
 import org.inquest.utils.WithLogger
 import org.inquest.utils.debugLog
 import org.inquest.utils.infoLog
+import org.inquest.utils.isIsacWipe
 import org.inquest.utils.startTime
 import org.inquest.utils.toMono
 import org.inquest.utils.toUni
@@ -273,7 +275,7 @@ class IsacCommand :
             CustomColors.SILVER_COLOR,
         ).dynamic()
         embeds += createSuccessLogsEmbed(this, isacDataService).dynamic()
-        if (this.pulls.any { !it.success }) embeds += createWipeLogsEmbed(this, isacDataService)
+        if (this.pulls.any(Pull::isIsacWipe)) embeds += createWipeLogsEmbed(this, isacDataService)
 
         return embeds
     }
