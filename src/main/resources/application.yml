@@ -3,6 +3,8 @@ discord:
   application-id: ${DC_APP_ID}
   guild-id: ${DC_GID:-1}
 quarkus:
+  banner:
+    path: BANNER
   log:
     category:
       org.inquest:

@@ -1,6 +1,5 @@
 package org.inquest.discord.commands.isac
 
-import discord4j.core.spec.EmbedCreateFields
 import discord4j.core.spec.EmbedCreateSpec
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
@@ -30,7 +29,6 @@ class WingmanEmbed {
     companion object {
         private const val TITLE_FMT = "${CustomEmojis.DPS}__%sDps Performance__"
         private const val HEADER_FMT = "Compared to Wingman %sTop-Dps for Boss and Class."
-        private const val FOOTER = "Please note that I.S.A.C. uses target dps for wingman analysis..."
         private const val NO_DATA = "I.S.A.C. has no wingman data available right now..."
     }
 
@@ -56,7 +54,7 @@ class WingmanEmbed {
         ),
         title = TITLE_FMT.format(if (supports)"Support " else ""),
         color = CustomColors.TRANSPARENT_COLOR,
-    ).withFooter(EmbedCreateFields.Footer.of(FOOTER, null))
+    )
 
     private fun createDescription(wingman: List<WingmanComparison>, professions: Map<String, String>, supports: Boolean) =
         StringBuilder().apply {

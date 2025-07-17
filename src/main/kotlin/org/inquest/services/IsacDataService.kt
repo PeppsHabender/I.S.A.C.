@@ -67,12 +67,12 @@ class IsacDataService {
     /**
      * @return Targets that are relevant for the analysis of the boss with [id]
      */
-    fun targets(id: Long?) = this.bossData[id]?.targets ?: listOf(0)
+    fun targets(id: Long?) = this.bossData[id]?.targets.ifNullOrEmpty { emptyList() }
 
     /**
-     * @return Targets that are not relevant for the analysis of the boss with [id]
+     * @return Phases that are relevant for the analysis of the boss with [id]
      */
-    fun targetsExclude(id: Long?) = this.bossData[id]?.targetsExclude ?: emptyList()
+    fun phases(id: Long?) = this.bossData[id]?.phases.ifNullOrEmpty { emptyList() }
 
     /**
      * @return Short name for the boss associated with [id]
@@ -83,6 +83,8 @@ class IsacDataService {
      * @return Wingman fallback id for the given boss
      */
     fun wingmanId(id: Long?, cm: Boolean) = this.bossData[id]?.wingmanId?.let { if (cm) -it else it }
+
+    private fun <T> List<T>?.ifNullOrEmpty(ls: () -> List<T>): List<T> = if (isNullOrEmpty()) ls() else this
 }
 
 data class BuildInfo(val buildTime: LocalDateTime, val version: String)

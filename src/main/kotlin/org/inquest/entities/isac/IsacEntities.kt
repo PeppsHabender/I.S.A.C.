@@ -27,7 +27,6 @@ data class IsacBoss(
     val emote: IsacEmote?,
     val shortname: String?,
     val targets: List<Int>?,
-    val targetsExclude: List<Int>?,
     val phases: List<Int>,
 )
 

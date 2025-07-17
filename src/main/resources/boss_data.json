@@ -7,12 +7,8 @@
       "normal": "<:vg:1340792080229859441>"
     },
     "shortname": "VG",
-    "targets": [
-      0
-    ],
-    "phases": [
-      0
-    ]
+    "targets": [],
+    "phases": []
   },
   {
     "boss": "Gorseval",
@@ -22,13 +18,8 @@
       "normal": "<:gors:1340792174823997440>"
     },
     "shortname": "Gors",
-    "targets": [
-      0
-    ],
-    "phases": [
-      3,
-      6
-    ]
+    "targets": [],
+    "phases": []
   },
   {
     "boss": "Sabetha",
@@ -38,12 +29,8 @@
       "normal": "<:sab:1340792233401778340>"
     },
     "shortname": "Sab",
-    "targets": [
-      0
-    ],
-    "phases": [
-      0
-    ]
+    "targets": [],
+    "phases": []
   },
   {
     "boss": "Slothasor",
@@ -56,13 +43,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      2,
-      4,
-      6,
-      8,
-      10
-    ]
+    "phases": []
   },
   {
     "boss": "Bandit Trio",
@@ -76,9 +57,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Matthias",
@@ -91,9 +70,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Escort",
@@ -107,10 +84,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      1,
-      2
-    ]
+    "phases": []
   },
   {
     "boss": "Keep Construct",
@@ -124,9 +98,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Twisted Castle",
@@ -137,9 +109,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Xera",
@@ -153,9 +123,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Cairn",
@@ -169,9 +137,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Mursaat Overseer",
@@ -185,9 +151,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Samarog",
@@ -201,19 +165,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      2,
-      3,
-      4,
-      5,
-      7,
-      8,
-      9,
-      10,
-      12,
-      13,
-      14
-    ]
+    "phases": []
   },
   {
     "boss": "Deimos",
@@ -225,10 +177,14 @@
     },
     "shortname": "Dei",
     "targets": [
-      0
+      0,
+      4,
+      5,
+      6,
+      7
     ],
     "phases": [
-      1
+      2
     ]
   },
   {
@@ -243,9 +199,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "River of Souls",
@@ -256,9 +210,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Broken King",
@@ -272,9 +224,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Soul Eater",
@@ -288,9 +238,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Eye of Judgement/Eye of Fate",
@@ -304,9 +252,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Dhuum",
@@ -322,7 +268,7 @@
       0
     ],
     "phases": [
-      0
+      2
     ]
   },
   {
@@ -334,12 +280,8 @@
       "challenge": "<:cacm:1340793947932327948>"
     },
     "shortname": "CA",
-    "targets": [
-      0
-    ],
-    "phases": [
-      0
-    ]
+    "targets": [],
+    "phases": []
   },
   {
     "boss": "Twin Largos",
@@ -354,9 +296,7 @@
       0,
       1
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Qadim",
@@ -371,9 +311,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Adina",
@@ -384,14 +322,8 @@
       "challenge": "<:adicm:1340794014517170267>"
     },
     "shortname": "Adina",
-    "targets": [
-      0
-    ],
-    "phases": [
-      2,
-      4,
-      6
-    ]
+    "targets": [],
+    "phases": []
   },
   {
     "boss": "Sabir",
@@ -405,9 +337,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Qadim the Peerless",
@@ -422,9 +352,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "MAMA",
@@ -436,9 +364,7 @@
       2,
       3
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Siax",
@@ -455,9 +381,7 @@
       7,
       8
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Ensolyss",
@@ -466,12 +390,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      3,
-      6,
-      8,
-      10
-    ]
+    "phases": []
   },
   {
     "boss": "Skorvald",
@@ -488,9 +407,7 @@
       7,
       8
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Artsariiv",
@@ -499,9 +416,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Arkk",
@@ -512,9 +427,7 @@
       1,
       2
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Ai, Elemental and Dark",
@@ -523,9 +436,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Ai, Elemental Only",
@@ -534,9 +445,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Ai, Dark Only",
@@ -548,9 +457,7 @@
       2,
       3
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Kanaxai, Scythe of House Aurkus",
@@ -559,9 +466,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Freezie",
@@ -571,9 +476,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Icebrood Construct",
@@ -586,9 +489,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Fraenir of Jormag",
@@ -602,9 +503,7 @@
       0,
       1
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Kodans",
@@ -618,9 +517,7 @@
       0,
       1
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Boneskinner",
@@ -633,9 +530,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Whisper of Jormag",
@@ -648,9 +543,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Varinia Stormsounder",
@@ -660,9 +553,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Aetherblade Hideout",
@@ -677,9 +568,7 @@
       0,
       1
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Xunlai Jade Junkyard",
@@ -693,30 +582,20 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Kaineng Overlook",
     "eliteInsightsId": 262915,
+    "wingmanId": 24485,
     "validForTopStat": true,
     "emote": {
       "normal": "<:ko:1340794256339501068>",
       "challenge": "<:kocm:1340794932255916053>"
     },
     "shortname": "KO",
-    "targets": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5
-    ],
-    "phases": [
-      0
-    ]
+    "targets": [],
+    "phases": []
   },
   {
     "boss": "Harvest Temple",
@@ -736,9 +615,7 @@
       4,
       5
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Old Lion's Court",
@@ -754,9 +631,7 @@
       1,
       2
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Cosmic Observatory",
@@ -770,9 +645,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Temple of Febe",
@@ -783,12 +656,8 @@
       "challenge": "<:febecm:1340795077207003257>"
     },
     "shortname": "ToF",
-    "targets": [
-      0
-    ],
-    "phases": [
-      0
-    ]
+    "targets": [],
+    "phases": []
   },
   {
     "boss": "Spirit Race",
@@ -799,9 +668,7 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Godspoil Greer",
@@ -815,11 +682,12 @@
     "targets": [
       0,
       1,
-      2
+      2,
+      4,
+      5,
+      6
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   },
   {
     "boss": "Godsquall Decima",
@@ -831,12 +699,8 @@
       "challenge": "<:decicm:1368371420085751848>"
     },
     "shortname": "Deci",
-    "targets": [
-      0
-    ],
-    "phases": [
-      0
-    ]
+    "targets": [],
+    "phases": []
   },
   {
     "boss": "Godscream Ura",
@@ -850,8 +714,6 @@
     "targets": [
       0
     ],
-    "phases": [
-      0
-    ]
+    "phases": []
   }
 ]

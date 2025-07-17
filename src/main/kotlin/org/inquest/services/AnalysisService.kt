@@ -139,7 +139,8 @@ class AnalysisService : WithLogger {
                 // For now.. Just assume that a player is a healer with a somewhat high heal score
                 (primBoon != null && dps.first < 4000) || (player.healing ?: 0) > 7,
                 player.boonUptimes(),
-                if (log.eiEncounterID == 262915L) player.fetchTargetDps() else dps.first,
+                // Deprecated since wingman skill-saving patch
+                dps.first,
             ).also {
                 it.boonUptimes.forEach { (boon, upt) -> boonUptimes.getValue(group)[boon]?.add(upt) }
             }
@@ -187,16 +188,15 @@ class AnalysisService : WithLogger {
         ) > 0
 
     private fun JsonActorParent.JsonPlayer.fetchDps(bossId: Long?): Pair<Int, Boolean> = this.dpsTargets
-        .slice(isacDataService.targets(bossId))
-        .mapIndexedNotNull { i, dpsTargets ->
-            if (i in isacDataService.targetsExclude(bossId)) {
-                null
-            } else {
-                dpsTargets[0].condiDps?.let { condi -> dpsTargets[0].powerDps?.let { condi to it } }
-            }
-            // dpsTargets.slice(bossData.phases(bossId)).mapNotNull { it.dps }
-        }.reduce { p1, p2 -> (p1.first + p2.first) to (p1.second + p2.second) }.let {
-            (it.first + it.second) to (it.first > it.second)
+        .slice(isacDataService.targets(bossId).filter { it < this.dpsTargets.size }.ifEmpty { this.dpsTargets.indices })
+        .map { dpsTarget ->
+            val phases = isacDataService.phases(bossId).filter { it < dpsTarget.size }.ifEmpty { listOf(0) }
+            val condi = dpsTarget.slice(phases).sumOf { it.condiDps ?: 0 }
+            val power = dpsTarget.slice(phases).sumOf { it.powerDps ?: 0 }
+
+            condi to power
+        }.reduce { (con1, pow1), (con2, pow2) -> (con1 + con2) to (pow1 + pow2) }.let { (con, pow) ->
+            (con + pow) to (con > pow)
         }
 
     private fun JsonActorParent.JsonPlayer.fetchTargetDps(): Int = this.dpsTargets[0][0].dps ?: 0
