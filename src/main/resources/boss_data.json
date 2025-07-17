@@ -7,9 +7,7 @@
       "normal": "<:vg:1340792080229859441>"
     },
     "shortname": "VG",
-    "targets": [
-      0
-    ],
+    "targets": [],
     "phases": [
       0
     ]
@@ -22,12 +20,9 @@
       "normal": "<:gors:1340792174823997440>"
     },
     "shortname": "Gors",
-    "targets": [
-      0
-    ],
+    "targets": [],
     "phases": [
-      3,
-      6
+      0
     ]
   },
   {
@@ -38,9 +33,7 @@
       "normal": "<:sab:1340792233401778340>"
     },
     "shortname": "Sab",
-    "targets": [
-      0
-    ],
+    "targets": [],
     "phases": [
       0
     ]
@@ -225,7 +218,11 @@
     },
     "shortname": "Dei",
     "targets": [
-      0
+      0,
+      4,
+      5,
+      6,
+      7
     ],
     "phases": [
       1
@@ -322,7 +319,13 @@
       0
     ],
     "phases": [
-      0
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
     ]
   },
   {
@@ -334,9 +337,7 @@
       "challenge": "<:cacm:1340793947932327948>"
     },
     "shortname": "CA",
-    "targets": [
-      0
-    ],
+    "targets": [],
     "phases": [
       0
     ]
@@ -384,13 +385,9 @@
       "challenge": "<:adicm:1340794014517170267>"
     },
     "shortname": "Adina",
-    "targets": [
-      0
-    ],
+    "targets": [],
     "phases": [
-      2,
-      4,
-      6
+      0
     ]
   },
   {
@@ -706,14 +703,7 @@
       "challenge": "<:kocm:1340794932255916053>"
     },
     "shortname": "KO",
-    "targets": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5
-    ],
+    "targets": [],
     "phases": [
       0
     ]
@@ -783,9 +773,7 @@
       "challenge": "<:febecm:1340795077207003257>"
     },
     "shortname": "ToF",
-    "targets": [
-      0
-    ],
+    "targets": [],
     "phases": [
       0
     ]
@@ -815,7 +803,10 @@
     "targets": [
       0,
       1,
-      2
+      2,
+      4,
+      5,
+      6
     ],
     "phases": [
       0
@@ -831,9 +822,7 @@
       "challenge": "<:decicm:1368371420085751848>"
     },
     "shortname": "Deci",
-    "targets": [
-      0
-    ],
+    "targets": [],
     "phases": [
       0
     ]

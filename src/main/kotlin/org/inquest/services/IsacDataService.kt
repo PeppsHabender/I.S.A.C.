@@ -70,11 +70,6 @@ class IsacDataService {
     fun targets(id: Long?) = this.bossData[id]?.targets ?: listOf(0)
 
     /**
-     * @return Targets that are not relevant for the analysis of the boss with [id]
-     */
-    fun targetsExclude(id: Long?) = this.bossData[id]?.targetsExclude ?: emptyList()
-
-    /**
      * @return Short name for the boss associated with [id]
      */
     fun shortName(id: Long?) = this.bossData[id]?.shortname

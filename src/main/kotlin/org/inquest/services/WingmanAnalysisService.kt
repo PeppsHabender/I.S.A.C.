@@ -5,10 +5,12 @@ import jakarta.inject.Inject
 import org.inquest.entities.isac.PlayerAnalysis
 import org.inquest.entities.isac.Profession
 import org.inquest.entities.isac.Pull
+import org.inquest.entities.logs.JsonActorParent
 import org.inquest.entities.wingman.BossBench
 import org.inquest.utils.DoubleExtensions.averageOrNull
 import org.inquest.utils.LogExtension.LOG
 import org.inquest.utils.WithLogger
+import kotlin.collections.ifEmpty
 
 /**
  * Uses the [WingmanService] and provides a detailed dps comparison to the wingman benchmarks.
@@ -111,6 +113,14 @@ class WingmanAnalysisService : WithLogger {
         dpsBench.getPowerBench(profession.name)
     }
 }
+
+private fun JsonActorParent.JsonPlayer.fetchDps(bossId: Long?): Pair<Int, Boolean> = this.dpsTargets
+    .slice(isacDataService.targets(bossId).filter { it < this.dpsTargets.size }.ifEmpty { this.dpsTargets.indices })
+    .mapIndexedNotNull { i, dpsTargets ->
+        dpsTargets[0].condiDps?.let { condi -> dpsTargets[0].powerDps?.let { condi to it } }
+    }.reduce { (con1, pow1), (con2, pow2) -> (con1 + con2) to (pow1 + pow2) }.let { (con, pow) ->
+        (con + pow) to (con > pow)
+    }
 
 data class WingmanComparison(val player: String, val average: DpsComparison, val lowest: DpsComparison, val highest: DpsComparison)
 
