@@ -31,6 +31,7 @@ dependencies {
     implementation("io.quarkus:quarkus-kotlin")
     implementation("io.quarkus:quarkus-config-yaml")
     implementation("io.quarkus:quarkus-arc")
+    implementation("io.quarkus:quarkus-smallrye-fault-tolerance")
 
     implementation("org.jetbrains.kotlinx:kandy-lets-plot:0.8.0") {
         exclude(group = "xml-apis", module = "xml-apis")

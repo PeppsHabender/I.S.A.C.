@@ -2,6 +2,7 @@ discord:
   token: ${DC_TOKEN}
   application-id: ${DC_APP_ID}
   guild-id: ${DC_GID:-1}
+  channel-id: ${DC_CID:-1}
 quarkus:
   banner:
     path: BANNER
@@ -24,4 +25,4 @@ quarkus:
         - https://inquestur.com
         - https://www.inquestur.com
         - /http://localhost:[0-9]+/
-      methods: GET
+      methods: GET, POST

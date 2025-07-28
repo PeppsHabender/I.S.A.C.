@@ -14,4 +14,7 @@ interface DiscordSettings {
 
     @ConfigProperty(name = "guild-id", defaultValue = "-1")
     fun guildId(): Long
+
+    @ConfigProperty(name = "channel-id", defaultValue = "-1")
+    fun channelId(): Long
 }
