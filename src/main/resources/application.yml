@@ -19,10 +19,14 @@ quarkus:
     database: isac
     connect-timeout: 10s
   http:
+    port: ${HTTP_PORT:8080}
+    insecure-requests: ${HTTP_REDIRECT:enabled}
+    ssl:
+      certificate:
+        files: ${CERT_FILES}
+        key-files: ${CERT_KEYS}
+    ssl-port: ${HTTPS_PORT:8443}
     cors:
       ~: true
-      origins:
-        - https://inquestur.com
-        - https://www.inquestur.com
-        - /http://localhost:[0-9]+/
-      methods: GET, POST
+      origins: ${CORS_ORIGINS:/.*//localhost:.*/}
+      access-control-allow-credentials: true
