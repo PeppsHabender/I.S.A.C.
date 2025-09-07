@@ -1,4 +1,4 @@
-package org.inquest.discord.commands.isac
+package org.inquest.discord.isac.embeds
 
 import discord4j.rest.util.Color
 import org.inquest.discord.CustomEmojis

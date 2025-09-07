@@ -1,4 +1,4 @@
-package org.inquest.discord.commands
+package org.inquest.discord.isac
 
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
@@ -9,12 +9,8 @@ import discord4j.discordjson.json.ApplicationCommandOptionData
 import discord4j.discordjson.json.ApplicationCommandRequest
 import jakarta.enterprise.context.ApplicationScoped
 import org.inquest.discord.CommandListener
-import org.inquest.discord.commands.CommonOptions.BOONS_OPTION
-import org.inquest.discord.commands.CommonOptions.HEAL_OPTION
-import org.inquest.discord.commands.CommonOptions.NAME_OPTION
-import org.inquest.discord.commands.CommonOptions.WM_OPTION
-import org.inquest.discord.commands.isac.ErrorEmbeds.CHANNEL_CONFIG_EXC_MSG
-import org.inquest.discord.commands.isac.ErrorEmbeds.raiseException
+import org.inquest.discord.isac.embeds.ErrorEmbeds.CHANNEL_CONFIG_EXC_MSG
+import org.inquest.discord.isac.embeds.ErrorEmbeds.raiseException
 import org.inquest.discord.optionAsOptions
 import org.inquest.entities.isac.Channel
 import org.inquest.entities.isac.ChannelSettings
@@ -28,10 +24,10 @@ import reactor.core.publisher.Mono
 import kotlin.jvm.optionals.getOrNull
 
 /**
- * Command 'save-config' which lets users provide a default config when using [org.inquest.discord.commands.isac.IsacCommand] in a channel.
+ * Command 'save-config' which lets users provide a default config when using [org.inquest.discord.isac.embeds.IsacCommand] in a channel.
  *
  * Options:
- * - [org.inquest.discord.commands.CommonOptions]
+ * - [CommonOptions]
  */
 @ApplicationScoped
 class ChannelSettingsCommand :
@@ -105,10 +101,10 @@ class ChannelSettingsCommand :
     }
 
     private fun List<ApplicationCommandInteractionOption>.createSettings(base: ChannelSettings): ChannelSettings = base.copy(
-        name = asString(NAME_OPTION),
-        withHeal = asBoolean(HEAL_OPTION),
-        compareWingman = asBoolean(WM_OPTION),
-        analyzeBoons = asBoolean(BOONS_OPTION),
+        name = asString(CommonOptions.NAME_OPTION),
+        withHeal = asBoolean(CommonOptions.HEAL_OPTION),
+        compareWingman = asBoolean(CommonOptions.WM_OPTION),
+        analyzeBoons = asBoolean(CommonOptions.BOONS_OPTION),
     )
 
     private fun List<ApplicationCommandInteractionOption>.asString(option: String) = firstOrNull {
@@ -141,10 +137,10 @@ class ChannelSettingsCommand :
             appendLine()
         }
 
-        display(NAME_OPTION, ChannelSettings::name)
-        display(HEAL_OPTION, ChannelSettings::withHeal)
-        display(WM_OPTION, ChannelSettings::compareWingman)
-        display(BOONS_OPTION, ChannelSettings::analyzeBoons)
+        display(CommonOptions.NAME_OPTION, ChannelSettings::name)
+        display(CommonOptions.HEAL_OPTION, ChannelSettings::withHeal)
+        display(CommonOptions.WM_OPTION, ChannelSettings::compareWingman)
+        display(CommonOptions.BOONS_OPTION, ChannelSettings::analyzeBoons)
 
         return this
     }

@@ -1,4 +1,4 @@
-package org.inquest.discord.commands
+package org.inquest.discord.isac
 
 import discord4j.core.event.domain.message.MessageDeleteEvent
 import io.smallrye.mutiny.Uni

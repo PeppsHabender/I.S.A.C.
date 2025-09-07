@@ -1,4 +1,4 @@
-package org.inquest.discord.commands
+package org.inquest.discord.isac
 
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent
@@ -8,7 +8,7 @@ import discord4j.core.`object`.entity.Message
 import discord4j.core.spec.MessageCreateFields
 import jakarta.enterprise.context.ApplicationScoped
 import org.inquest.discord.InteractionEventListener
-import org.inquest.discord.commands.PlotCommons.dateX
+import org.inquest.discord.isac.PlotCommons.dateX
 import org.inquest.entities.isac.ChannelAnalysis
 import org.inquest.entities.isac.PlayerAnalysis
 import org.inquest.utils.DoubleExtensions.format

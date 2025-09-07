@@ -1,4 +1,4 @@
-package org.inquest.discord.commands.isac
+package org.inquest.discord.isac.embeds
 
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
@@ -18,25 +18,18 @@ import org.inquest.clients.DpsReportClient
 import org.inquest.discord.CommandListener
 import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis
-import org.inquest.discord.commands.CommonIds
-import org.inquest.discord.commands.CommonOptions
-import org.inquest.discord.commands.CommonOptions.BOONS_OPTION
-import org.inquest.discord.commands.CommonOptions.HEAL_OPTION
-import org.inquest.discord.commands.CommonOptions.LOGS_OPTION
-import org.inquest.discord.commands.CommonOptions.NAME_OPTION
-import org.inquest.discord.commands.CommonOptions.WM_OPTION
-import org.inquest.discord.commands.interactionId
-import org.inquest.discord.commands.isac.ErrorEmbeds.ANALYZE_BOONS_EXC_MSG
-import org.inquest.discord.commands.isac.ErrorEmbeds.ANALYZE_EXC_MSG
-import org.inquest.discord.commands.isac.ErrorEmbeds.ANALYZE_WM_EXC_MSG
-import org.inquest.discord.commands.isac.ErrorEmbeds.FETCHING_EXC_MSG
-import org.inquest.discord.commands.isac.ErrorEmbeds.NO_LOGS_EXC_MSG
-import org.inquest.discord.commands.isac.ErrorEmbeds.raiseException
-import org.inquest.discord.commands.isac.IsacCommand.Companion.DPS_REPORT_RGX
-import org.inquest.discord.commands.isac.LogListingEmbeds.createSuccessLogsEmbed
-import org.inquest.discord.commands.isac.LogListingEmbeds.createWipeLogsEmbed
-import org.inquest.discord.commands.isac.OverviewEmbed.createOverviewEmbed
-import org.inquest.discord.commands.isac.TopStatsEmbed.createTopStatsEmbed
+import org.inquest.discord.isac.CommonIds
+import org.inquest.discord.isac.CommonOptions
+import org.inquest.discord.isac.CommonOptions.BOONS_OPTION
+import org.inquest.discord.isac.CommonOptions.HEAL_OPTION
+import org.inquest.discord.isac.CommonOptions.LOGS_OPTION
+import org.inquest.discord.isac.CommonOptions.NAME_OPTION
+import org.inquest.discord.isac.CommonOptions.WM_OPTION
+import org.inquest.discord.isac.interactionId
+import org.inquest.discord.isac.embeds.ErrorEmbeds.raiseException
+import org.inquest.discord.isac.embeds.IsacCommand.Companion.DPS_REPORT_RGX
+import org.inquest.discord.isac.embeds.LogListingEmbeds.createSuccessLogsEmbed
+import org.inquest.discord.isac.embeds.LogListingEmbeds.createWipeLogsEmbed
 import org.inquest.discord.createEmbed
 import org.inquest.discord.createMessageOrShowError
 import org.inquest.discord.dynamic
@@ -68,7 +61,7 @@ import kotlin.jvm.optionals.getOrNull
  *
  * Options:
  * - logs: List of logs matching [DPS_REPORT_RGX]
- * - [org.inquest.discord.commands.CommonOptions]
+ * - [CommonOptions]
  */
 @ApplicationScoped
 class IsacCommand :
@@ -170,16 +163,16 @@ class IsacCommand :
                 .map { Pair(link, it) }
                 .toMono()
         }.collectSortedList { o1, o2 -> o1.second.startTime().compareTo(o2.second.startTime()) }
-        .flatMap { if (it.isEmpty()) event.raiseException(LOG, NO_LOGS_EXC_MSG) else Mono.just(it) }
+        .flatMap { if (it.isEmpty()) event.raiseException(LOG, ErrorEmbeds.NO_LOGS_EXC_MSG) else Mono.just(it) }
         .infoLog(LOG, "$interactionId: Downloaded logs.")
-        .onErrorResume { event.raiseException(LOG, FETCHING_EXC_MSG) }
+        .onErrorResume { event.raiseException(LOG, ErrorEmbeds.FETCHING_EXC_MSG) }
         .flatMap { ls ->
             if (ls.isEmpty()) {
                 Mono.empty()
             } else {
                 Mono.just(this.analysisService.analyze(interactionId, ls))
             }
-        }.onErrorResume { event.raiseException(LOG, ANALYZE_EXC_MSG, it, true) }
+        }.onErrorResume { event.raiseException(LOG, ErrorEmbeds.ANALYZE_EXC_MSG, it, true) }
         .flatMap { analysis ->
             event.interaction.channel.flatMap { ch ->
                 Channel.findOrPut(ch.id.asString()).toMono().map {
@@ -230,15 +223,15 @@ class IsacCommand :
         }.toUni().call { (settings, analysis, thread) ->
             thread.createForOption(settings.compareWingman, {
                 wingmanEmbed.createWingmanEmbed(interactionId, analysis.pulls, analysis.playerStats).dynamic()
-            }) { createEmbed(ANALYZE_WM_EXC_MSG, color = CustomColors.RED_COLOR) }
+            }) { createEmbed(ErrorEmbeds.ANALYZE_WM_EXC_MSG, color = CustomColors.RED_COLOR) }
         }.call { (settings, analysis, thread) ->
             thread.createForOption(settings.compareWingman, {
                 wingmanEmbed.createWingmanEmbed(interactionId, analysis.pulls, analysis.playerStats, true).dynamic()
-            }) { createEmbed(ANALYZE_WM_EXC_MSG, color = CustomColors.RED_COLOR) }
+            }) { createEmbed(ErrorEmbeds.ANALYZE_WM_EXC_MSG, color = CustomColors.RED_COLOR) }
         }.call { (settings, analysis, thread) ->
             thread.createForOption(settings.analyzeBoons, {
                 boonStatsEmbed.createOverviewEmbed(analysis, event).dynamic()
-            }) { createEmbed(ANALYZE_BOONS_EXC_MSG, color = CustomColors.RED_COLOR) }
+            }) { createEmbed(ErrorEmbeds.ANALYZE_BOONS_EXC_MSG, color = CustomColors.RED_COLOR) }
         }.toMono().then()
 
     private fun ThreadChannel.createForOption(
@@ -257,8 +250,8 @@ class IsacCommand :
 
     private fun RunAnalysis.createEmbeds(channelSettings: ChannelSettings): List<EmbedCreateSpec> {
         val embeds = mutableListOf<EmbedCreateSpec>()
-        embeds += createOverviewEmbed(this, channelSettings.name).dynamic()
-        embeds += createTopStatsEmbed(
+        embeds += OverviewEmbed.createOverviewEmbed(this, channelSettings.name).dynamic()
+        embeds += TopStatsEmbed.createTopStatsEmbed(
             this,
             channelSettings.withHeal,
             CustomEmojis.TOP_STATS,
@@ -266,7 +259,7 @@ class IsacCommand :
             0,
             CustomColors.GOLD_COLOR,
         ).dynamic()
-        embeds += createTopStatsEmbed(
+        embeds += TopStatsEmbed.createTopStatsEmbed(
             this,
             channelSettings.withHeal,
             CustomEmojis.SEC_TOP_STATS,

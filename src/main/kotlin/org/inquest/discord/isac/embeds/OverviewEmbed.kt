@@ -1,4 +1,4 @@
-package org.inquest.discord.commands.isac
+package org.inquest.discord.isac.embeds
 
 import discord4j.core.spec.EmbedCreateSpec
 import org.inquest.discord.CustomColors

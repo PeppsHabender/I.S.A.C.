@@ -1,10 +1,6 @@
-package org.inquest.discord.commands
+package org.inquest.discord.isac
 
 import org.inquest.discord.booleanOption
-import org.inquest.discord.commands.CommonOptions.BOONS_OPTION
-import org.inquest.discord.commands.CommonOptions.HEAL_OPTION
-import org.inquest.discord.commands.CommonOptions.NAME_OPTION
-import org.inquest.discord.commands.CommonOptions.WM_OPTION
 import org.inquest.discord.stringOption
 import org.jetbrains.kotlinx.kandy.dsl.continuous
 import org.jetbrains.kotlinx.kandy.letsplot.layers.builders.aes.WithX
