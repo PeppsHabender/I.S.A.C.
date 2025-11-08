@@ -1,3 +1,0 @@
-[submodule "src/main/kotlin/org/inquest/discord/websisac"]
-	path = src/main/kotlin/org/inquest/discord/websisac
-	url = https://github.com/PeppsHabender/websisac.git
