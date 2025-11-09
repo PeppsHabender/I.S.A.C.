@@ -14,10 +14,6 @@ quarkus:
       enable: true
       path: logs/isac.log
       format: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%c] (%t) %s%e%n"
-  mongodb:
-    connection-string: ${MONGO_DB_URL:mongodb://localhost:27017}
-    database: isac
-    connect-timeout: 10s
   http:
     port: ${HTTP_PORT:8080}
     insecure-requests: ${HTTP_REDIRECT:enabled}
@@ -30,3 +26,16 @@ quarkus:
       ~: true
       origins: ${CORS_ORIGINS:/.*//localhost:.*/}
       access-control-allow-credentials: true
+"%mongo":
+  quarkus:
+    mongodb:
+      connection-string: ${MONGO_DB_URL:mongodb://localhost:27017}
+      database: isac
+      connect-timeout: 10s
+"%dev":
+  quarkus:
+      devservices:
+        enabled: false
+"%prod":
+  quarkus:
+    profile: mongo

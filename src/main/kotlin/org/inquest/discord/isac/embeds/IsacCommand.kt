@@ -12,6 +12,7 @@ import discord4j.discordjson.json.ApplicationCommandRequest
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import org.eclipse.microprofile.config.ConfigProvider
 import org.eclipse.microprofile.context.ManagedExecutor
 import org.eclipse.microprofile.rest.client.inject.RestClient
 import org.inquest.clients.DpsReportClient
@@ -53,7 +54,9 @@ import org.inquest.utils.toMono
 import org.inquest.utils.toUni
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toMono
 import reactor.core.scheduler.Schedulers
+import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -174,6 +177,10 @@ class IsacCommand :
             }
         }.onErrorResume { event.raiseException(LOG, ErrorEmbeds.ANALYZE_EXC_MSG, it, true) }
         .flatMap { analysis ->
+            if (!mongoEnabled()) {
+                return@flatMap Mono.just(TupleContext(ChannelSettings(), analysis, false))
+            }
+
             event.interaction.channel.flatMap { ch ->
                 Channel.findOrPut(ch.id.asString()).toMono().map {
                     it.channelSettings
@@ -206,6 +213,10 @@ class IsacCommand :
                 .doOnSubscribe { LOG.info("$interactionId: Putting together embeds...") }
         }.infoLog(LOG, "$interactionId: Successfully built embeds.")
         .flatMap { ctxt ->
+            if (!mongoEnabled()) {
+                return@flatMap Mono.just(ctxt)
+            }
+
             ChannelAnalysis().apply {
                 this.id = ctxt.subject2.id.asString()
                 this.channelId = ctxt.subject2.channelId.asString()
@@ -273,6 +284,10 @@ class IsacCommand :
         return embeds
     }
 }
+
+private fun mongoEnabled(): Boolean = "mongo" in ConfigProvider.getConfig()
+    .getOptionalValue("quarkus.profile", String::class.java)
+    .getOrDefault("").trim().split(",")
 
 private data class Context<T>(val channelSettings: ChannelSettings, val subject: T)
 

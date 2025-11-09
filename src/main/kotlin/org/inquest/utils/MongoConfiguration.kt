@@ -1,6 +1,7 @@
 package org.inquest.utils
 
 import com.mongodb.client.MongoClient
+import io.quarkus.arc.profile.IfBuildProfile
 import io.quarkus.runtime.Startup
 import jakarta.annotation.PostConstruct
 import jakarta.enterprise.context.ApplicationScoped
@@ -48,6 +49,7 @@ class CodecProvider : CodecProvider {
  */
 @Startup
 @ApplicationScoped
+@IfBuildProfile("mongo")
 class MongoConfig : WithLogger {
     @Inject
     private lateinit var mongoClient: MongoClient

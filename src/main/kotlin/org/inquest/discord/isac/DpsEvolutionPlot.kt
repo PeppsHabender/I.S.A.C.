@@ -6,6 +6,7 @@ import discord4j.core.`object`.component.ActionRow
 import discord4j.core.`object`.component.TextInput
 import discord4j.core.`object`.entity.Message
 import discord4j.core.spec.MessageCreateFields
+import io.quarkus.arc.profile.IfBuildProfile
 import jakarta.enterprise.context.ApplicationScoped
 import org.inquest.discord.InteractionEventListener
 import org.inquest.discord.isac.PlotCommons.dateX
@@ -40,6 +41,7 @@ import java.util.concurrent.TimeoutException
  * Creates a plot which shows the dps development for a specific player, asks the user for account name in a modal.
  */
 @ApplicationScoped
+@IfBuildProfile("mongo")
 class DpsEvolutionPlot : InteractionEventListener<ButtonInteractionEvent>() {
     companion object {
         private const val ACC_NAME = "account_name"
