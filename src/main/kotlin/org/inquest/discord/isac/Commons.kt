@@ -12,6 +12,7 @@ object CommonIds {
     const val GROUP_DPS_EVOLUTION = "group_dps_stats"
     const val DPS_EVOLUTION = "dps_stats"
     const val TIME_EVOLUTION = "time_stats"
+    const val INFO_EMBED = "isac_embed"
 }
 
 /**

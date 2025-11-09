@@ -45,7 +45,7 @@ dependencies {
 }
 
 group = "org.inquest"
-version = "1.0.5-SNAPSHOT"
+version = "1.0.6-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -97,3 +97,4 @@ val cpyInfo = tasks.register("copyBuildInfo") {
 }
 
 tasks.findByName("build")?.dependsOn(cpyInfo)
+tasks.findByName("quarkusDev")?.dependsOn(cpyInfo)

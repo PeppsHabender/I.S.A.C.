@@ -74,10 +74,11 @@ class IsacCommand :
         private val DPS_REPORT_RGX =
             Regex("https://(?:[ab]\\.)?dps.report/[\\w-]+(?=\\s*?https|$|\\s)")
         private val ACTION_BUTTONS = listOf(
-            Button.secondary(CommonIds.TIME_EVOLUTION, ReactionEmoji.of(CustomEmojis.TIME_EMOJI)),
-            Button.secondary(CommonIds.GROUP_DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.GROUP_DPS_EMOJI)),
-            Button.secondary(CommonIds.DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.DPS_EMOJI)),
+            Button.primary(CommonIds.TIME_EVOLUTION, ReactionEmoji.of(CustomEmojis.TIME_EMOJI)),
+            Button.primary(CommonIds.GROUP_DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.GROUP_DPS_EMOJI)),
+            Button.primary(CommonIds.DPS_EVOLUTION, ReactionEmoji.of(CustomEmojis.DPS_EMOJI)),
         )
+        private val INFO_BUTTON = Button.secondary(CommonIds.INFO_EMBED, ReactionEmoji.of(CustomEmojis.INFO_EMOJI))
     }
 
     override val name: String = "analyze"
@@ -203,10 +204,13 @@ class IsacCommand :
             }
         }.flatMap { (settings, analysis, withButtons) ->
             var reply = event.editReply().withEmbeds(*analysis.createEmbeds(settings).toTypedArray())
+
             if (withButtons) {
                 reply = reply.withComponents(
-                    ActionRow.of(ACTION_BUTTONS),
+                    ActionRow.of(*ACTION_BUTTONS.toTypedArray(), INFO_BUTTON),
                 )
+            } else {
+                reply = reply.withComponents(ActionRow.of(INFO_BUTTON))
             }
 
             return@flatMap reply.map { TupleContext(settings, analysis, it) }

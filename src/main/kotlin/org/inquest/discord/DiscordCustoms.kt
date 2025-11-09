@@ -7,7 +7,9 @@ object CustomEmojis {
     val TIME_EMOJI: EmojiData = EmojiData.builder().id(1340019219638652968L).name("time").build()
     val GROUP_DPS_EMOJI: EmojiData = EmojiData.builder().id(1340055121337389217).name("groupdps").build()
     val DPS_EMOJI: EmojiData = EmojiData.builder().id(1340084146755735583L).name("dps").build()
+    val INFO_EMOJI: EmojiData = EmojiData.builder().id(1437069172772438146L).name("info").build()
 
+    const val INFO = " <:info:1437069172772438146> "
     const val TIME = " <:time:1340019219638652968> "
     const val INFIGHT = " <:infight:1340021072942202981> "
     const val DOWNTIME = " <:downtime:1340021105699717231> "

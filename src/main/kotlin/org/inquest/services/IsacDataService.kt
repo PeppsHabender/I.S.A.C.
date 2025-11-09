@@ -8,7 +8,7 @@ import jakarta.inject.Inject
 import org.inquest.entities.isac.IsacBoon
 import org.inquest.entities.isac.IsacBoss
 import java.time.Instant
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.Properties
 
@@ -31,7 +31,7 @@ class IsacDataService {
         val props = Properties().apply { load(it) }
         val buildTime = Instant.ofEpochMilli(props["buildTime"].toString().toLong())
 
-        BuildInfo(LocalDateTime.ofInstant(buildTime, ZoneId.of("Europe/Berlin")), props["version"].toString())
+        BuildInfo(OffsetDateTime.ofInstant(buildTime, ZoneId.of("Europe/Berlin")), props["version"].toString())
     }
 
     /**
@@ -87,4 +87,6 @@ class IsacDataService {
     private fun <T> List<T>?.ifNullOrEmpty(ls: () -> List<T>): List<T> = if (isNullOrEmpty()) ls() else this
 }
 
-data class BuildInfo(val buildTime: LocalDateTime, val version: String)
+data class BuildInfo(val buildTime: OffsetDateTime, val version: String) {
+    val deploymentTime: OffsetDateTime = OffsetDateTime.now()
+}

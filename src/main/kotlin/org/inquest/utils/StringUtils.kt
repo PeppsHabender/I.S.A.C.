@@ -27,6 +27,8 @@ fun String.splitStringByNewLine(maxLength: Int = 4096): List<String> {
     }
 }
 
+fun StringBuilder.hyperlink(text: String, url: String) = append("[$text]($url)")
+
 /**
  * Appends the discord timestamp to [this] using [toDiscordTimestamp]
  */

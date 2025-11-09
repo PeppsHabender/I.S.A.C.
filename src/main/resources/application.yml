@@ -36,6 +36,7 @@ quarkus:
   quarkus:
       devservices:
         enabled: false
+      profile: mongo
 "%prod":
   quarkus:
     profile: mongo
