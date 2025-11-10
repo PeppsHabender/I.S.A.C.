@@ -15,9 +15,7 @@ import org.inquest.utils.mapNotNull
 @MongoEntity
 class Channel : ReactivePanacheMongoEntityBase() {
     companion object : ReactivePanacheMongoCompanionBase<Channel, String> {
-        fun findOrPut(id: String): Uni<Channel> = findById(id).invoke { x ->
-            println()
-        }.onItem().ifNull().switchTo {
+        fun findOrPut(id: String): Uni<Channel> = findById(id).onItem().ifNull().switchTo {
             Uni.createFrom().item(Channel().apply { this.channelId = id }).call(::persist)
         }.mapNotNull()
 
