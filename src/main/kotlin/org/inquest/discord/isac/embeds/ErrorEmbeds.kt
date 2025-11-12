@@ -20,6 +20,7 @@ object ErrorEmbeds {
     const val ANALYZE_WM_EXC_MSG = "**Oups.. Looks like wingman isnt too nice to us!**\nMaybe this could help..."
     const val ANALYZE_BOONS_EXC_MSG = "**Failed to analyze your boons...**"
     const val CHANNEL_CONFIG_EXC_MSG = "**I.S.A.C. failed to update/view channel configuration!**"
+    const val MEMORIZE_EXC_MSG = "**I.S.A.C. failed to memorize account name!**\nGw2 api might be unavailable..."
 
     /**
      * Raises an exception on this interaction, by creating an error embed.
@@ -33,7 +34,7 @@ object ErrorEmbeds {
         val editMono = editReply().withEmbed(message, color = CustomColors.RED_COLOR)
 
         return if (withStackTrace && exc != null) {
-            editMono.withFile("stacktrace.log", exc.also(Throwable::printStackTrace).stackTraceToString())
+            editMono.withFile("stacktrace.log", exc.stackTraceToString())
         } else {
             editMono
         }.errorLog(logger, message, exc).then(Mono.empty())

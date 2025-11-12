@@ -7,6 +7,7 @@ import org.inquest.discord.CustomColors
 import org.inquest.discord.CustomEmojis
 import org.inquest.discord.createEmbed
 import org.inquest.discord.toDiscordTimestamp
+import org.inquest.entities.isac.Gw2ToDiscord
 import org.inquest.entities.isac.PlayerAnalysis
 import org.inquest.entities.isac.Pull
 import org.inquest.services.DpsComparison
@@ -18,6 +19,7 @@ import org.inquest.utils.DoubleExtensions.format
 import org.inquest.utils.appendBold
 import org.inquest.utils.appendItalic
 import org.inquest.utils.appendMono
+import org.inquest.utils.mention
 import org.inquest.utils.space
 
 /**
@@ -44,10 +46,12 @@ class WingmanEmbed {
     fun createWingmanEmbed(
         interactionId: String,
         bosses: List<Pull>,
+        gw2ToDiscord: Map<String, Gw2ToDiscord?>,
         players: List<PlayerAnalysis>,
         supports: Boolean = false,
     ): EmbedCreateSpec = createEmbed(
         createDescription(
+            gw2ToDiscord,
             this.analysisService.compareToWingman(interactionId, bosses, players, supports),
             players.associate { it.name to it.mostPlayed(supports) },
             supports,
@@ -56,25 +60,29 @@ class WingmanEmbed {
         color = CustomColors.TRANSPARENT_COLOR,
     )
 
-    private fun createDescription(wingman: List<WingmanComparison>, professions: Map<String, String>, supports: Boolean) =
-        StringBuilder().apply {
-            if (!wingmanService.hasData) {
-                appendBold(NO_DATA)
-                return@apply
-            }
+    private fun createDescription(
+        gw2ToDiscord: Map<String, Gw2ToDiscord?>,
+        wingman: List<WingmanComparison>,
+        professions: Map<String, String>,
+        supports: Boolean,
+    ) = StringBuilder().apply {
+        if (!wingmanService.hasData) {
+            appendBold(NO_DATA)
+            return@apply
+        }
 
-            header(supports)
+        header(supports)
+        appendLine()
+        appendLine()
+
+        wingman.forEach {
+            createComparison(gw2ToDiscord, it, professions)
             appendLine()
             appendLine()
+        }
 
-            wingman.forEach {
-                createComparison(it, professions)
-                appendLine()
-                appendLine()
-            }
-
-            deleteRange(length - 2, length)
-        }.toString()
+        deleteRange(length - 2, length)
+    }.toString()
 
     private fun StringBuilder.header(supports: Boolean) {
         appendItalic(HEADER_FMT.format(if (supports) "Support-" else ""))
@@ -85,8 +93,12 @@ class WingmanEmbed {
         append("_")
     }
 
-    private fun StringBuilder.createComparison(comparison: WingmanComparison, professions: Map<String, String>) {
-        appendBold(comparison.player)
+    private fun StringBuilder.createComparison(
+        gw2ToDiscord: Map<String, Gw2ToDiscord?>,
+        comparison: WingmanComparison,
+        professions: Map<String, String>,
+    ) {
+        gw2ToDiscord[comparison.player]?.let { mention(it.discordId) } ?: appendBold(comparison.player)
         appendLine()
         CustomEmojis.professionEmote(professions[comparison.player])?.let(::append)
         createComparison("Average >>", comparison.average)

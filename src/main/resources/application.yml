@@ -34,8 +34,9 @@ quarkus:
       connect-timeout: 10s
 "%dev":
   quarkus:
-      devservices:
-        enabled: false
+    profile: mongo
+    devservices:
+      enabled: false
 "%prod":
   quarkus:
     profile: mongo

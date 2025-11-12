@@ -6,7 +6,7 @@ import org.slf4j.Logger
 import reactor.core.publisher.Mono
 import reactor.core.publisher.ParallelFlux
 
-fun <T> Uni<T>.toMono(): Mono<T> = Mono.from(FlowAdapters.toPublisher(convert().toPublisher()))
+fun <T> Uni<T>.toMono(): Mono<T> = Mono.fromCompletionStage(subscribeAsCompletionStage())
 
 fun <T> Mono<T>.toUni(): Uni<T> = Uni.createFrom().publisher(FlowAdapters.toFlowPublisher(this)).flatMap {
     if (it == null) Uni.createFrom().nothing() else Uni.createFrom().item(it)

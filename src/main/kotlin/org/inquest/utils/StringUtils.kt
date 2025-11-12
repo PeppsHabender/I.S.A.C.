@@ -40,6 +40,11 @@ fun StringBuilder.appendTimestamp(temporal: Temporal) = append(" ${temporal.toDi
 fun StringBuilder.mention(member: Member) = append("<@${member.id.asString()}>")
 
 /**
+ * Mentions the given [member].
+ */
+fun StringBuilder.mention(member: String) = append("<@$member>")
+
+/**
  * Appends a space
  */
 fun StringBuilder.space() = append(' ')

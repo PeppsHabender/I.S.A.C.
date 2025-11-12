@@ -6,6 +6,7 @@ import discord4j.core.`object`.command.ApplicationCommandOption
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.ThreadChannel
 import discord4j.core.spec.EmbedCreateSpec
+import discord4j.core.spec.InteractionApplicationCommandCallbackReplyMono
 import discord4j.core.spec.InteractionReplyEditMono
 import discord4j.core.spec.MessageCreateFields
 import discord4j.discordjson.json.ApplicationCommandOptionData
@@ -95,6 +96,11 @@ fun InteractionReplyEditMono.withEmbed(description: String, title: String? = nul
  */
 fun InteractionReplyEditMono.withFile(fileName: String, bytes: ByteArrayInputStream): InteractionReplyEditMono =
     withFiles(MessageCreateFields.File.of(fileName, bytes))
+
+fun InteractionApplicationCommandCallbackReplyMono.withFile(
+    fileName: String,
+    bytes: ByteArrayInputStream,
+): InteractionApplicationCommandCallbackReplyMono = withFiles(MessageCreateFields.File.of(fileName, bytes))
 
 /**
  * Adds a new file to this reply.

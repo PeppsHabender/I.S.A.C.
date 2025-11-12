@@ -1,5 +1,6 @@
 package org.inquest.discord.isac.embeds
 
+import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.component.ActionRow
@@ -40,6 +41,7 @@ import org.inquest.discord.stringOption
 import org.inquest.entities.isac.Channel
 import org.inquest.entities.isac.ChannelAnalysis
 import org.inquest.entities.isac.ChannelSettings
+import org.inquest.entities.isac.Gw2ToDiscord
 import org.inquest.entities.isac.Pull
 import org.inquest.entities.isac.RunAnalysis
 import org.inquest.services.AnalysisService
@@ -54,7 +56,6 @@ import org.inquest.utils.toMono
 import org.inquest.utils.toUni
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
 import reactor.core.scheduler.Schedulers
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
@@ -175,6 +176,41 @@ class IsacCommand :
                 Mono.empty()
             } else {
                 Mono.just(this.analysisService.analyze(interactionId, ls))
+                    .flatMap { analysis ->
+                        event.interaction.guild.flatMap { guild ->
+                            if (guild == null) {
+                                return@flatMap Mono.just(CurrentAnalysis(mapOf(), analysis))
+                            }
+
+                            val mapUnis = analysis.playerStats.map { player ->
+                                Gw2ToDiscord.findByGw2Account(player.name)
+                                    .toMono()
+                                    .flatMap<Pair<String, Gw2ToDiscord?>> { account ->
+                                        if (account?.discordId == null) {
+                                            Mono.empty()
+                                        } else {
+                                            guild.getMemberById(Snowflake.of(account.discordId))
+                                                .map { player.name to account }
+                                                .onErrorResume { _ -> Mono.empty() }
+                                                .switchIfEmpty(Mono.empty())
+                                        }
+                                    }
+                                    .onErrorResume { _ -> Mono.empty() }
+                                    .defaultIfEmpty("" to null)
+                                    .toUni()
+                                    .onFailure()
+                                    .recoverWithNull()
+                            }
+
+                            Uni.combine().all().unis<Pair<String, Gw2ToDiscord?>>(mapUnis)
+                                .with { results ->
+                                    @Suppress("UNCHECKED_CAST")
+                                    val filteredMap = (results.filterNotNull() as List<Pair<String, Gw2ToDiscord?>>).toMap()
+                                    CurrentAnalysis(filteredMap, analysis)
+                                }
+                                .toMono()
+                        }.onErrorResume { Mono.just(CurrentAnalysis(mapOf(), analysis)) }
+                    }
             }
         }.onErrorResume { event.raiseException(LOG, ErrorEmbeds.ANALYZE_EXC_MSG, it, true) }
         .flatMap { analysis ->
@@ -205,12 +241,12 @@ class IsacCommand :
         }.flatMap { (settings, analysis, withButtons) ->
             var reply = event.editReply().withEmbeds(*analysis.createEmbeds(settings).toTypedArray())
 
-            if (withButtons) {
-                reply = reply.withComponents(
+            reply = if (withButtons) {
+                reply.withComponents(
                     ActionRow.of(*ACTION_BUTTONS.toTypedArray(), INFO_BUTTON),
                 )
             } else {
-                reply = reply.withComponents(ActionRow.of(INFO_BUTTON))
+                reply.withComponents(ActionRow.of(INFO_BUTTON))
             }
 
             return@flatMap reply.map { TupleContext(settings, analysis, it) }
@@ -225,7 +261,7 @@ class IsacCommand :
                 this.id = ctxt.subject2.id.asString()
                 this.channelId = ctxt.subject2.channelId.asString()
                 this.name = ctxt.channelSettings.name
-                this.analysis = ctxt.subject1
+                this.analysis = ctxt.subject1.analysis
             }.persistOrUpdate<ChannelAnalysis>().toMono().map { ctxt }
         }.flatMap { (settings, analysis, msg) ->
             if (settings.compareWingman || settings.analyzeBoons) {
@@ -237,15 +273,26 @@ class IsacCommand :
             }
         }.toUni().call { (settings, analysis, thread) ->
             thread.createForOption(settings.compareWingman, {
-                wingmanEmbed.createWingmanEmbed(interactionId, analysis.pulls, analysis.playerStats).dynamic()
+                wingmanEmbed.createWingmanEmbed(
+                    interactionId,
+                    analysis.analysis.pulls,
+                    analysis.accountMap,
+                    analysis.analysis.playerStats,
+                ).dynamic()
             }) { createEmbed(ErrorEmbeds.ANALYZE_WM_EXC_MSG, color = CustomColors.RED_COLOR) }
         }.call { (settings, analysis, thread) ->
             thread.createForOption(settings.compareWingman, {
-                wingmanEmbed.createWingmanEmbed(interactionId, analysis.pulls, analysis.playerStats, true).dynamic()
+                wingmanEmbed.createWingmanEmbed(
+                    interactionId,
+                    analysis.analysis.pulls,
+                    analysis.accountMap,
+                    analysis.analysis.playerStats,
+                    true,
+                ).dynamic()
             }) { createEmbed(ErrorEmbeds.ANALYZE_WM_EXC_MSG, color = CustomColors.RED_COLOR) }
         }.call { (settings, analysis, thread) ->
             thread.createForOption(settings.analyzeBoons, {
-                boonStatsEmbed.createOverviewEmbed(analysis, event).dynamic()
+                boonStatsEmbed.createOverviewEmbed(analysis.analysis, event).dynamic()
             }) { createEmbed(ErrorEmbeds.ANALYZE_BOONS_EXC_MSG, color = CustomColors.RED_COLOR) }
         }.toMono().then()
 
@@ -263,11 +310,12 @@ class IsacCommand :
         it.value
     }.toList()
 
-    private fun RunAnalysis.createEmbeds(channelSettings: ChannelSettings): List<EmbedCreateSpec> {
+    private fun CurrentAnalysis.createEmbeds(channelSettings: ChannelSettings): List<EmbedCreateSpec> {
         val embeds = mutableListOf<EmbedCreateSpec>()
-        embeds += OverviewEmbed.createOverviewEmbed(this, channelSettings.name).dynamic()
+        embeds += OverviewEmbed.createOverviewEmbed(this.analysis, channelSettings.name).dynamic()
         embeds += TopStatsEmbed.createTopStatsEmbed(
-            this,
+            this.analysis,
+            this.accountMap,
             channelSettings.withHeal,
             CustomEmojis.TOP_STATS,
             "Top Stats",
@@ -275,15 +323,16 @@ class IsacCommand :
             CustomColors.GOLD_COLOR,
         ).dynamic()
         embeds += TopStatsEmbed.createTopStatsEmbed(
-            this,
+            this.analysis,
+            this.accountMap,
             channelSettings.withHeal,
             CustomEmojis.SEC_TOP_STATS,
             "Second Best",
             1,
             CustomColors.SILVER_COLOR,
         ).dynamic()
-        embeds += createSuccessLogsEmbed(this, isacDataService).dynamic()
-        if (this.pulls.any(Pull::isIsacWipe)) embeds += createWipeLogsEmbed(this, isacDataService)
+        embeds += createSuccessLogsEmbed(this.analysis, isacDataService).dynamic()
+        if (this.analysis.pulls.any(Pull::isIsacWipe)) embeds += createWipeLogsEmbed(this.analysis, isacDataService)
 
         return embeds
     }
@@ -292,6 +341,8 @@ class IsacCommand :
 private fun mongoEnabled(): Boolean = "mongo" in ConfigProvider.getConfig()
     .getOptionalValue("quarkus.profile", String::class.java)
     .getOrDefault("").trim().split(",")
+
+private data class CurrentAnalysis(val accountMap: Map<String, Gw2ToDiscord?>, val analysis: RunAnalysis)
 
 private data class Context<T>(val channelSettings: ChannelSettings, val subject: T)
 
