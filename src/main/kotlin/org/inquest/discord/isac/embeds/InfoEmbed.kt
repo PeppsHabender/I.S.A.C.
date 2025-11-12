@@ -41,7 +41,7 @@ class InfoEmbed : InteractionEventListener<ButtonInteractionEvent>() {
         appendLine()
         appendLine()
         append("Bug Reports? Feature Requests? Suggestions? Check out the ")
-        hyperlink("GitHub", "https://github.com/PeppsHabender/I.S.A.C")
+        hyperlink("GitHub", "https://github.com/PeppsHabender/I.S.A.C./")
         append(" repository")
     }
 }
