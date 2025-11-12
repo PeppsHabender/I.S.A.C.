@@ -175,7 +175,8 @@ class IsacCommand :
             if (ls.isEmpty()) {
                 Mono.empty()
             } else {
-                Mono.just(this.analysisService.analyze(interactionId, ls))
+                val analysis = this.analysisService.analyze(interactionId, ls)
+                Mono.just(analysis)
                     .flatMap { analysis ->
                         event.interaction.guild.flatMap { guild ->
                             if (guild == null) {
@@ -209,8 +210,8 @@ class IsacCommand :
                                     CurrentAnalysis(filteredMap, analysis)
                                 }
                                 .toMono()
-                        }.onErrorResume { Mono.just(CurrentAnalysis(mapOf(), analysis)) }
-                    }
+                        }
+                    }.switchIfEmpty(Mono.just(CurrentAnalysis(mapOf(), analysis)))
             }
         }.onErrorResume { event.raiseException(LOG, ErrorEmbeds.ANALYZE_EXC_MSG, it, true) }
         .flatMap { analysis ->
