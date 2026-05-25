@@ -3,6 +3,7 @@ package org.inquest.analysis
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.inquest.analysis.model.PlayerAnalysis
+import org.inquest.analysis.model.PlayerPull
 import org.inquest.analysis.model.Pull
 import org.inquest.analysis.model.RunAnalysis
 import org.inquest.catalog.IsacDataService
@@ -43,6 +44,7 @@ class AnalysisService : WithLogger {
         val pulls: MutableList<Pull> = mutableListOf()
         val groupDps: MutableList<Int> = mutableListOf()
         val playerStats: MutableMap<String, PlayerAnalysis> = mutableMapOf()
+        val playerStatPullLinks: MutableList<String> = mutableListOf()
 
         for ((link, log) in sortedLogs) {
             LOG.debug("$interactionId: Analyzing $link...")
@@ -62,6 +64,7 @@ class AnalysisService : WithLogger {
             }
 
             groupDps += dpsExtractor.groupDps(log.players, log.eiEncounterID)
+            playerStatPullLinks += pulls.last().link
 
             LOG.debug("$interactionId: Analyzing player stats for $link...")
             playerStatsAnalyzer.addPlayerStats(interactionId, playerStats, log, pulls.last())
@@ -77,7 +80,7 @@ class AnalysisService : WithLogger {
             duration.inWholeMilliseconds,
             pulls,
             groupDps.averageOrZero().roundToInt(),
-            playerStats.values.toList(),
+            playerStats.withAbsencesFor(playerStatPullLinks).values.toList(),
         )
     }
 
@@ -110,4 +113,12 @@ class AnalysisService : WithLogger {
         ) > 0
 
     private fun List<Int>.averageOrZero(): Double = if (isEmpty()) 0.0 else average()
+
+    private fun MutableMap<String, PlayerAnalysis>.withAbsencesFor(pullLinks: List<String>) = apply {
+        values.forEach { player ->
+            pullLinks.forEach { link ->
+                player.pulls.putIfAbsent(link, PlayerPull())
+            }
+        }
+    }
 }

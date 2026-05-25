@@ -48,6 +48,26 @@ class TopStatsCalculatorTest {
         assertEquals(listOf("Alice", "Bob"), lines.map { it.player })
     }
 
+    @Test
+    fun `calculate ranks dps by average position including absences`() {
+        val analysis = runAnalysis(
+            player(
+                "Alice",
+                *List(13) { pull(dps = 20_000, dpsPos = 3) }.toTypedArray(),
+            ),
+            player(
+                "Bob",
+                *List(12) { PlayerPull() }.toTypedArray(),
+                pull(dps = 50_000, dpsPos = 0),
+            ),
+        )
+
+        val lines = TopStatsCalculator.calculate(analysis, withHeal = false)
+            .filter { it.title == "Dps           >>" }
+
+        assertEquals(listOf("Alice"), lines.map { it.player })
+    }
+
     private fun runAnalysis(vararg players: PlayerAnalysis) = RunAnalysis(
         start = OffsetDateTime.now(),
         end = OffsetDateTime.now(),
@@ -58,14 +78,15 @@ class TopStatsCalculatorTest {
         playerStats = players.toList(),
     )
 
-    private fun player(name: String, pull: PlayerPull) = PlayerAnalysis(
+    private fun player(name: String, vararg pulls: PlayerPull) = PlayerAnalysis(
         name,
-        mutableMapOf("pull" to pull),
+        pulls.mapIndexed { index, pull -> "pull-$index" to pull }.toMap(mutableMapOf()),
     )
 
-    private fun pull(cc: Int) = PlayerPull().copy(
+    private fun pull(cc: Int = 0, dps: Int = 1, dpsPos: Int = 0) = PlayerPull().copy(
         cc = cc,
-        dps = 1,
+        dps = dps,
+        dpsPos = dpsPos,
         profession = PlayerPull().profession.copy(name = "Test"),
     )
 }
