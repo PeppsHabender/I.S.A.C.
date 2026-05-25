@@ -127,7 +127,7 @@ class PlayerAnalysis @BsonCreator constructor(
         .filterNot { if (heals) it.maybeHealer else false }
         .map { it.dps }.averageOrNull()
 
-    fun avgDpsPos() = this.pulls.values.participated().map { it.dpsPos }.average()
+    fun avgDpsPos() = this.pulls.values.map { it.dpsPos }.average()
 
     fun avgHeal() = this.pulls.values.participated().map { it.heal }.average()
 
