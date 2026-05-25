@@ -715,5 +715,20 @@
       0
     ],
     "phases": []
+  },
+  {
+    "boss": "Kela, Seneschal of Waves",
+    "eliteInsightsId": 263681,
+    "wingmanId": 27124,
+    "validForTopStat": true,
+    "emote": {
+      "normal": "<:kela:1508505830859997184>",
+      "challenge": "<:kelacm:1508505858005274784>"
+    },
+    "shortname": "Kela",
+    "targets": [
+      0
+    ],
+    "phases": []
   }
 ]
