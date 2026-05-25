@@ -83,6 +83,8 @@ object TopStatsCalculator {
         if (mapped.isEmpty()) return
 
         if (isTop) {
+            if (!mapped.first().hasStatValue()) return
+
             val taken = mapped.takeWhile { it == mapped.first() }
 
             taken.forEachIndexed { i, it ->
@@ -91,6 +93,8 @@ object TopStatsCalculator {
         } else {
             val dropped = mapped.dropWhile { it == mapped.first() }
             if (dropped.isEmpty()) return
+            if (!dropped.first().hasStatValue()) return
+
             sorted = sorted.takeLast(dropped.size)
 
             dropped
@@ -99,6 +103,11 @@ object TopStatsCalculator {
                     add(TopStatLine(emoji, title, sorted[i].name, numPrefix, formatter(it), numSuffix))
                 }
         }
+    }
+
+    private fun <T> T.hasStatValue(): Boolean = when (this) {
+        is Number -> this.toDouble() > 0.0
+        else -> true
     }
 }
 
