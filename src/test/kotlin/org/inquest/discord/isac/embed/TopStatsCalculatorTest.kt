@@ -2,9 +2,12 @@ package org.inquest.discord.isac.embed
 
 import org.inquest.analysis.model.PlayerAnalysis
 import org.inquest.analysis.model.PlayerPull
+import org.inquest.analysis.model.Profession
 import org.inquest.analysis.model.RunAnalysis
+import org.inquest.discord.support.CustomEmojis
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import java.time.OffsetDateTime
 
@@ -68,6 +71,22 @@ class TopStatsCalculatorTest {
         assertEquals(listOf("Alice"), lines.map { it.player })
     }
 
+    @Test
+    fun `most played ignores absences when choosing profession`() {
+        val player = player(
+            "Alice",
+            *List(12) { PlayerPull() }.toTypedArray(),
+            pull(profession = "Virtuoso"),
+        )
+
+        assertEquals("Virtuoso", player.mostPlayed(support = false))
+    }
+
+    @Test
+    fun `profession emote does not render null for unknown profession`() {
+        assertNull(CustomEmojis.professionEmote("*"))
+    }
+
     private fun runAnalysis(vararg players: PlayerAnalysis) = RunAnalysis(
         start = OffsetDateTime.now(),
         end = OffsetDateTime.now(),
@@ -83,10 +102,10 @@ class TopStatsCalculatorTest {
         pulls.mapIndexed { index, pull -> "pull-$index" to pull }.toMap(mutableMapOf()),
     )
 
-    private fun pull(cc: Int = 0, dps: Int = 1, dpsPos: Int = 0) = PlayerPull().copy(
+    private fun pull(cc: Int = 0, dps: Int = 1, dpsPos: Int = 0, profession: String = "Test") = PlayerPull().copy(
         cc = cc,
         dps = dps,
         dpsPos = dpsPos,
-        profession = PlayerPull().profession.copy(name = "Test"),
+        profession = Profession(profession, false),
     )
 }

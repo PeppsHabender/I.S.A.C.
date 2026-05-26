@@ -15,6 +15,7 @@ import discord4j.rest.util.Color
 import org.inquest.shared.reactor.errorLog
 import org.inquest.shared.text.splitStringByNewLine
 import org.slf4j.Logger
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.io.ByteArrayInputStream
 import java.time.Instant
@@ -50,12 +51,48 @@ fun ThreadChannel.createMessageOrShowError(
     message: () -> Array<EmbedCreateSpec>,
     error: (Throwable) -> EmbedCreateSpec,
 ): Mono<Message> = try {
-    createMessage(*message())
+    Flux.fromIterable(message().chunkedByEmbedSize())
+        .concatMap { createMessage(*it.toTypedArray()) }
+        .last()
+        .onErrorResume { ex ->
+            createMessage(error(ex))
+                .withFiles(MessageCreateFields.File.of("stacktrace.log", ex.stackTraceToString().byteInputStream()))
+                .errorLog(logger, ex.message ?: "Unknown Message", ex)
+        }
 } catch (ex: Throwable) {
     createMessage(error(ex))
         .withFiles(MessageCreateFields.File.of("stacktrace.log", ex.stackTraceToString().byteInputStream()))
         .errorLog(logger, ex.message ?: "Unknown Message", ex)
 }
+
+private fun Array<EmbedCreateSpec>.chunkedByEmbedSize(): List<List<EmbedCreateSpec>> {
+    val chunks = mutableListOf<MutableList<EmbedCreateSpec>>()
+    var currentChunk = mutableListOf<EmbedCreateSpec>()
+    var currentSize = 0
+
+    forEach { embed ->
+        val embedSize = embed.estimatedSize()
+        if (currentChunk.isNotEmpty() && currentSize + embedSize > MAX_MESSAGE_EMBED_SIZE) {
+            chunks += currentChunk
+            currentChunk = mutableListOf()
+            currentSize = 0
+        }
+
+        currentChunk += embed
+        currentSize += embedSize
+    }
+
+    if (currentChunk.isNotEmpty()) {
+        chunks += currentChunk
+    }
+
+    return chunks
+}
+
+private fun EmbedCreateSpec.estimatedSize(): Int = (description().toOptional().getOrNull()?.length ?: 0) +
+    (title().toOptional().getOrNull()?.length ?: 0)
+
+private const val MAX_MESSAGE_EMBED_SIZE = 6000
 
 /**
  * Makes this embed dynamic, should it reach more than 4096 chars, it is split up into multiple embeds.

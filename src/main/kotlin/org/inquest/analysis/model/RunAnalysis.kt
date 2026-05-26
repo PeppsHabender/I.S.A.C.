@@ -114,7 +114,7 @@ class PlayerAnalysis @BsonCreator constructor(
     @BsonProperty("pulls") val pulls: MutableMap<String, PlayerPull>,
 ) {
     fun mostPlayed(support: Boolean, healer: Boolean = false): String = this.pulls.values.filter {
-        support == it.isSupport && healer == it.maybeHealer
+        it.participated && support == it.isSupport && healer == it.maybeHealer
     }.map {
         it.profession
     }.groupingBy { it.name }.eachCount().maxByOrNull { it.value }?.key ?: "*"

@@ -88,7 +88,7 @@ object CustomEmojis {
      * @return Emote for the given [profession]
      */
     fun professionEmote(profession: String?) = profession?.let {
-        " ${PROFESSIONS[it.lowercase()]} "
+        PROFESSIONS[it.lowercase()]?.let { emote -> " $emote " }
     }
 }
 
