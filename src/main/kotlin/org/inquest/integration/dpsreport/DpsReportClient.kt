@@ -36,5 +36,8 @@ interface DpsReportClient {
      */
     @GET
     @Path(JSON_PATH)
-    fun fetchJson(@QueryParam("permalink") permalink: String): Uni<JsonLog>
+    fun fetchJson(
+        @QueryParam("permalink") permalink: String,
+        @QueryParam("isacCacheBust") cacheBust: String?,
+    ): Uni<JsonLog>
 }

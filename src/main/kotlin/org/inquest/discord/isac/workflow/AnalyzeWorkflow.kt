@@ -6,7 +6,6 @@ import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.eclipse.microprofile.context.ManagedExecutor
-import org.eclipse.microprofile.rest.client.inject.RestClient
 import org.inquest.analysis.AnalysisService
 import org.inquest.discord.isac.embed.ErrorEmbeds
 import org.inquest.discord.isac.embed.ErrorEmbeds.raiseException
@@ -16,7 +15,7 @@ import org.inquest.discord.isac.shared.CommonOptions.NAME_OPTION
 import org.inquest.discord.isac.shared.CommonOptions.WM_OPTION
 import org.inquest.discord.support.optionAsBoolean
 import org.inquest.discord.support.optionAsString
-import org.inquest.integration.dpsreport.DpsReportClient
+import org.inquest.integration.dpsreport.DpsReportLogFetcher
 import org.inquest.persistence.mongo.Channel
 import org.inquest.persistence.mongo.ChannelAnalysis
 import org.inquest.persistence.mongo.ChannelSettings
@@ -34,8 +33,8 @@ import reactor.core.scheduler.Schedulers
 
 @ApplicationScoped
 class AnalyzeWorkflow : WithLogger {
-    @RestClient
-    private lateinit var dpsReportClient: DpsReportClient
+    @Inject
+    private lateinit var dpsReportLogFetcher: DpsReportLogFetcher
 
     @Inject
     private lateinit var analysisService: AnalysisService
@@ -61,7 +60,7 @@ class AnalyzeWorkflow : WithLogger {
         .runOn(Schedulers.fromExecutor(managedExecutor))
         .debugLog(LOG) { "$interactionId: Downloading log $it..." }
         .flatMap { link ->
-            dpsReportClient
+            dpsReportLogFetcher
                 .fetchJson(link)
                 .map { Pair(link, it) }
                 .toMono()
