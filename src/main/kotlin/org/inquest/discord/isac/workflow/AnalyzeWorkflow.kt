@@ -68,7 +68,7 @@ class AnalyzeWorkflow : WithLogger {
         }.collectSortedList { o1, o2 -> o1.second.startTime().compareTo(o2.second.startTime()) }
         .flatMap { if (it.isEmpty()) event.raiseException(LOG, ErrorEmbeds.NO_LOGS_EXC_MSG) else Mono.just(it) }
         .infoLog(LOG, "$interactionId: Downloaded logs.")
-        .onErrorResume { event.raiseException(LOG, ErrorEmbeds.FETCHING_EXC_MSG) }
+        .onErrorResume { event.raiseException(LOG, ErrorEmbeds.FETCHING_EXC_MSG, withStackTrace = true) }
 
     private fun attachAccountMappings(
         event: ChatInputInteractionEvent,
